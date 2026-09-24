@@ -297,8 +297,8 @@ function Row({
         className={cn(
           'min-w-0',
           formData
-            ? 'col-span-2 col-start-2 row-start-2 sm:col-span-1 sm:col-start-4 sm:row-start-1'
-            : 'col-start-2 row-start-2 sm:col-start-3 sm:row-start-1',
+            ? 'col-span-3 col-start-2 row-start-2 sm:col-span-1 sm:col-start-4 sm:row-start-1'
+            : 'col-span-2 col-start-2 row-start-2 sm:col-span-1 sm:col-start-3 sm:row-start-1',
         )}
       >
         {isFile ? (

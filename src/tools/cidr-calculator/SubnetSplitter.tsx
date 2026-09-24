@@ -158,7 +158,8 @@ export function SubnetSplitter({
               key={`${ok.newPrefix}-${ok.total}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-[13px] text-fg-2"
+              // 与输入框（h-10）垂直居中；滑块模式底部是轨道，保持贴底
+              className={cn('text-[13px] text-fg-2', splitMode !== 'prefix' && 'sm:pb-2.5')}
             >
               划分为 <b className="text-fg">{n(ok.total)}</b> 个{' '}
               <b className="font-mono text-fg">/{ok.newPrefix}</b>，每个子网{' '}

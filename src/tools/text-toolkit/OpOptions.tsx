@@ -114,6 +114,7 @@ export function OpOptions({
                   if (Number.isFinite(n)) patch({ lnStart: Math.trunc(n) })
                 }}
                 aria-label="起始编号"
+                className="h-9"
               />
             </Field>
             <Field label="分隔符">
@@ -253,6 +254,7 @@ export function OpOptions({
                 value={o.joinSeparator}
                 onChange={(e) => patch({ joinSeparator: e.target.value })}
                 aria-label="分隔符"
+                className="h-9"
               />
             </Field>
             <Field label="外层包裹">

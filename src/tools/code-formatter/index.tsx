@@ -145,6 +145,18 @@ export default function CodeFormatter() {
 
   const ext = def.filename.split('.').pop() ?? 'txt'
 
+  const resetButton = (
+    <Button
+      size="sm"
+      variant="ghost"
+      iconOnly
+      icon={<RotateCcw />}
+      title="恢复默认选项"
+      aria-label="恢复默认选项"
+      onClick={() => setStored((p) => ({ ...DEFAULT_PREFS, lang: sanitize(p).lang }))}
+    />
+  )
+
   const toolbar = (
     <>
       <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -253,17 +265,6 @@ export default function CodeFormatter() {
             />
           </Opt>
         )}
-        <Opt key="reset" className="ml-auto">
-          <Button
-            size="sm"
-            variant="ghost"
-            iconOnly
-            icon={<RotateCcw />}
-            title="恢复默认选项"
-            aria-label="恢复默认选项"
-            onClick={() => setStored((p) => ({ ...DEFAULT_PREFS, lang: sanitize(p).lang }))}
-          />
-        </Opt>
       </AnimatePresence>
     </>
   )
@@ -314,10 +315,11 @@ export default function CodeFormatter() {
           </span>
         }
         inputPlaceholder="粘贴代码，自动识别语言并实时格式化…"
-        sample={CODE_SAMPLES[lang]}
+        sample={CODE_SAMPLES[prefs.lang === 'auto' ? lang : prefs.lang]}
         acceptFile={ACCEPT}
         downloadName={`formatted.${ext}`}
         toolbar={toolbar}
+        toolbarEnd={resetButton}
         outputSlot={
           <div className="relative h-full">
             <div

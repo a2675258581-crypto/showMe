@@ -180,7 +180,8 @@ export function UrlParser({ prefs, set }: { prefs: UrlPrefs; set: SetPref }) {
           onChange={(e) => changeInput(e.target.value)}
           placeholder="粘贴一条链接，例如 https://example.com/path?a=1#top"
           aria-label="要解析的 URL"
-          className="min-h-20 break-all"
+          autoGrow
+          className="max-h-60 min-h-20 leading-relaxed break-all"
         />
 
         <AnimatePresence initial={false}>

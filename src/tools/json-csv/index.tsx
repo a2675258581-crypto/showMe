@@ -221,7 +221,8 @@ export default function JsonCsv() {
 
   const rows = shown.table.rows.length
   const cols = shown.table.headers.length
-  const badges: { key: string; node: ReactNode }[] = []
+  // secondary：双栏且较窄（lg～xl）时隐藏，免得输出栏标题折成两行、与输入栏错开
+  const badges: { key: string; node: ReactNode; secondary?: boolean }[] = []
   if (result.ok && !pending && cols > 0) {
     badges.push({
       key: 'size',
@@ -237,6 +238,7 @@ export default function JsonCsv() {
     if (!outCsv && prefs.csvDelimiter === 'auto' && isDelimiter(result.delimiter))
       badges.push({
         key: 'delim',
+        secondary: true,
         node: <Badge color="var(--sys-teal)">分隔符：{DELIMITER_LABELS[result.delimiter]}</Badge>,
       })
     if (result.usedPath)
@@ -250,6 +252,23 @@ export default function JsonCsv() {
         ),
       })
   }
+
+  const resetButton = (
+    <Button
+      size="sm"
+      variant="ghost"
+      iconOnly
+      icon={<RotateCcw />}
+      title="恢复默认选项"
+      aria-label="恢复默认选项"
+      onClick={() =>
+        setStored((p) => {
+          const cur = sanitize(p)
+          return { ...DEFAULT_PREFS, direction: cur.direction, view: cur.view }
+        })
+      }
+    />
+  )
 
   const toolbar = (
     <>
@@ -380,22 +399,6 @@ export default function JsonCsv() {
             />
           </Opt>
         )}
-        <Opt key="reset" className="ml-auto">
-          <Button
-            size="sm"
-            variant="ghost"
-            iconOnly
-            icon={<RotateCcw />}
-            title="恢复默认选项"
-            aria-label="恢复默认选项"
-            onClick={() =>
-              setStored((p) => {
-                const cur = sanitize(p)
-                return { ...DEFAULT_PREFS, direction: cur.direction, view: cur.view }
-              })
-            }
-          />
-        </Opt>
       </AnimatePresence>
     </>
   )
@@ -430,6 +433,7 @@ export default function JsonCsv() {
         onSwap={swap}
         acceptFile=".json,.csv,.tsv,.txt,text/*"
         toolbar={toolbar}
+        toolbarEnd={resetButton}
         outputActions={
           <>
             <SegmentedControl<View>
@@ -460,6 +464,7 @@ export default function JsonCsv() {
                   ),
                 },
               ]}
+              // sm 分段控件比标题栏按钮高 2px：抵消掉，免得输出栏标题比输入栏高、两侧正文错开
               className="mr-1"
             />
             <Button
@@ -508,7 +513,7 @@ export default function JsonCsv() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.6 }}
                     transition={spring}
-                    className="inline-flex"
+                    className={cn('inline-flex', b.secondary && 'lg:max-xl:hidden')}
                   >
                     {b.node}
                   </motion.span>

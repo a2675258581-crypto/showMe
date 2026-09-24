@@ -129,10 +129,7 @@ export function ContrastPanel({ color, bgInput, onBgInput, bg, bgError, onSwap }
         </ContrastCard>
       </div>
 
-      <div
-        className="mt-4 overflow-hidden rounded-2xl ring-1 ring-line ring-inset"
-        style={{ background: CHECKER }}
-      >
+      <div className="relative mt-4 overflow-hidden rounded-2xl" style={{ background: CHECKER }}>
         <motion.div
           initial={false}
           animate={{ backgroundColor: rgbaCss(bg), color: rgbaCss(color) }}
@@ -148,6 +145,11 @@ export function ContrastPanel({ color, bgInput, onBgInput, bg, bgError, onSwap }
           </p>
           <p className="text-[13px] opacity-90">小号说明文字 13px · 0123456789</p>
         </motion.div>
+        {/* 描边叠在预览色块之上：背景与卡片同色（如白色）时也能看出边界 */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-line ring-inset"
+        />
       </div>
       <p className="mt-3 text-xs leading-relaxed text-fg-3">
         标准：正文 AA ≥ 4.5、AAA ≥ 7；大字（≥ 24px，或 ≥ 18.66px 粗体）AA ≥ 3、AAA ≥

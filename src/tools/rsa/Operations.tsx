@@ -115,7 +115,8 @@ function ResultBox({
         </span>
       }
       action={
-        <span className="flex items-center gap-1">
+        // 负外边距让 32px 高的按钮不撑高标签行，左右两栏的输入框顶部才能对齐
+        <span className="-my-1 flex items-center gap-1">
           {action}
           <CopyButton text={value} disabled={!value} />
         </span>

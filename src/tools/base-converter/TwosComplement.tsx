@@ -38,7 +38,7 @@ export function TwosComplement({ value }: { value: bigint | null }) {
                   </Badge>
                 </div>
                 <div className="flex items-start gap-2">
-                  <code className="min-w-0 flex-1 font-mono text-[12.5px] leading-5 break-all text-fg">
+                  <code className="min-w-0 flex-1 font-mono text-[12.5px] leading-5 break-words text-fg">
                     {groupDigits(info.binary, 4)}
                   </code>
                   <CopyButton
@@ -46,26 +46,21 @@ export function TwosComplement({ value }: { value: bigint | null }) {
                     iconOnly
                     variant="ghost"
                     label={`复制 ${w} 位二进制`}
+                    className="-my-1.5"
                   />
                 </div>
                 <dl className="grid grid-cols-3 gap-2 text-[12px]">
                   <div className="min-w-0">
                     <dt className="text-[11px] text-fg-3">十六进制</dt>
-                    <dd className="truncate font-mono text-fg" title={`0x${info.hex}`}>
-                      0x{info.hex}
-                    </dd>
+                    <dd className="font-mono break-all text-fg">0x{info.hex}</dd>
                   </div>
                   <div className="min-w-0">
                     <dt className="text-[11px] text-fg-3">有符号</dt>
-                    <dd className="truncate font-mono text-fg" title={info.signed.toString()}>
-                      {info.signed.toString()}
-                    </dd>
+                    <dd className="font-mono break-all text-fg">{info.signed.toString()}</dd>
                   </div>
                   <div className="min-w-0">
                     <dt className="text-[11px] text-fg-3">无符号</dt>
-                    <dd className="truncate font-mono text-fg" title={info.unsigned.toString()}>
-                      {info.unsigned.toString()}
-                    </dd>
+                    <dd className="font-mono break-all text-fg">{info.unsigned.toString()}</dd>
                   </div>
                 </dl>
                 {info.overflow && (

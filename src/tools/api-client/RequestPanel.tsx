@@ -203,7 +203,10 @@ function SettingsForm({
               onChange={(e) =>
                 set({ timeoutMs: Math.max(0, Math.round(Number(e.target.value) || 0)) })
               }
-              className={cn('font-mono', invalid && 'border-danger focus:border-danger')}
+              className={cn(
+                'font-mono',
+                invalid && 'border-danger focus:border-danger focus:ring-danger/15',
+              )}
               aria-label="超时时间（毫秒）"
             />
           </div>

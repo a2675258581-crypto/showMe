@@ -126,6 +126,18 @@ export default function JsonYaml() {
       })
   }
 
+  const resetButton = (
+    <Button
+      size="sm"
+      variant="ghost"
+      iconOnly
+      icon={<RotateCcw />}
+      title="恢复默认选项"
+      aria-label="恢复默认选项"
+      onClick={() => setStored((p) => ({ ...DEFAULT_PREFS, direction: sanitize(p).direction }))}
+    />
+  )
+
   const toolbar = (
     <>
       <SegmentedControl<Direction>
@@ -221,19 +233,6 @@ export default function JsonYaml() {
             />
           </Opt>
         )}
-        <Opt key="reset" className="ml-auto">
-          <Button
-            size="sm"
-            variant="ghost"
-            iconOnly
-            icon={<RotateCcw />}
-            title="恢复默认选项"
-            aria-label="恢复默认选项"
-            onClick={() =>
-              setStored((p) => ({ ...DEFAULT_PREFS, direction: sanitize(p).direction }))
-            }
-          />
-        </Opt>
       </AnimatePresence>
     </>
   )
@@ -268,6 +267,7 @@ export default function JsonYaml() {
         acceptFile=".json,.yaml,.yml,text/*"
         downloadName={outYaml ? 'converted.yaml' : 'converted.json'}
         toolbar={toolbar}
+        toolbarEnd={resetButton}
         outputFooter={
           <>
             <span>

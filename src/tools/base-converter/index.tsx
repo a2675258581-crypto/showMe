@@ -178,21 +178,24 @@ export default function BaseConverter() {
             onChange={(v) => setOpt('uppercase', v)}
             label={<span className="text-[13px] text-fg-2">大写字母</span>}
           />
-          <Button
-            size="sm"
-            variant="ghost"
-            icon={<Sparkles />}
-            onClick={() => {
-              const next = (sampleIdx + 1) % SAMPLES.length
-              setSampleIdx(next)
-              edit('dec', SAMPLES[next])
-            }}
-          >
-            示例
-          </Button>
-          <Button size="sm" variant="ghost" icon={<Trash2 />} onClick={() => setDirect(null)}>
-            清空
-          </Button>
+          {/* 两个按钮成组换行，窄屏上不会把「清空」单独挤到一行 */}
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              icon={<Sparkles />}
+              onClick={() => {
+                const next = (sampleIdx + 1) % SAMPLES.length
+                setSampleIdx(next)
+                edit('dec', SAMPLES[next])
+              }}
+            >
+              示例
+            </Button>
+            <Button size="sm" variant="ghost" icon={<Trash2 />} onClick={() => setDirect(null)}>
+              清空
+            </Button>
+          </div>
         </PanelHeader>
 
         <div className="grid gap-x-5 gap-y-4 md:grid-cols-2">

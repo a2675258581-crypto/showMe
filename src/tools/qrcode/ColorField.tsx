@@ -49,8 +49,8 @@ export function ColorField({
           mono
           className={cn(
             // 手机上两列并排空间很窄：收窄内边距保证 #RRGGBB 完整显示
-            'min-w-0 flex-1 px-2! uppercase sm:w-28! sm:flex-none sm:px-3.5!',
-            invalid && 'border-danger! focus:border-danger!',
+            'min-w-0 flex-1 px-2 uppercase sm:w-28 sm:flex-none sm:px-3.5',
+            invalid && 'border-danger focus:border-danger focus:ring-danger/15',
           )}
         />
       </span>

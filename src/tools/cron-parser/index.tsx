@@ -157,10 +157,13 @@ export default function CronParser() {
           className="pointer-events-none absolute -top-24 -right-16 size-72 rounded-full bg-accent/10 blur-3xl"
         />
         <div className="relative flex flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Timer className="size-4 text-accent" />
-              <span className="text-[15px] font-semibold text-fg">Cron 表达式</span>
+          {/* 窄屏时让徽标换到标题下方，复制按钮始终留在标题右侧 */}
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex min-h-8 min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="inline-flex items-center gap-2">
+                <Timer className="size-4 text-accent" />
+                <span className="text-[15px] font-semibold text-fg">Cron 表达式</span>
+              </span>
               {shape && <Badge>{shape}</Badge>}
             </div>
             <CopyButton text={expr.trim()} label="复制表达式" disabled={!expr.trim()} />

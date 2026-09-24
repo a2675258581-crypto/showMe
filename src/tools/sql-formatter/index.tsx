@@ -103,6 +103,23 @@ export default function SqlFormatter() {
       ? Math.round((1 - result.output.length / debounced.length) * 100)
       : null
 
+  const resetButton = (
+    <Button
+      size="sm"
+      variant="ghost"
+      iconOnly
+      icon={<RotateCcw />}
+      title="恢复默认选项（保留方言）"
+      aria-label="恢复默认选项"
+      onClick={() =>
+        setStored((p) => {
+          const cur = sanitize(p)
+          return { ...DEFAULT_PREFS, dialect: cur.dialect, mode: cur.mode, more: cur.more }
+        })
+      }
+    />
+  )
+
   const toolbar = (
     <>
       <SegmentedControl<SqlMode>
@@ -191,22 +208,6 @@ export default function SqlFormatter() {
             </span>
           </Opt>
         )}
-        <Opt key="reset" className="ml-auto">
-          <Button
-            size="sm"
-            variant="ghost"
-            iconOnly
-            icon={<RotateCcw />}
-            title="恢复默认选项（保留方言）"
-            aria-label="恢复默认选项"
-            onClick={() =>
-              setStored((p) => {
-                const cur = sanitize(p)
-                return { ...DEFAULT_PREFS, dialect: cur.dialect, mode: cur.mode, more: cur.more }
-              })
-            }
-          />
-        </Opt>
       </AnimatePresence>
 
       <AnimatePresence initial={false}>
@@ -299,6 +300,7 @@ export default function SqlFormatter() {
         acceptFile=".sql,text/*"
         downloadName={isMinify ? 'minified.sql' : 'formatted.sql'}
         toolbar={toolbar}
+        toolbarEnd={resetButton}
         outputTitle={
           <span className="inline-flex items-center gap-2">
             {isMinify ? '压缩结果' : '格式化结果'}

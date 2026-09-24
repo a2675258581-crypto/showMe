@@ -20,7 +20,7 @@ export default function CaseConverter() {
           onChange={(e) => setInput(e.target.value)}
           placeholder="输入变量名或短语，每行一个"
           mono
-          className="min-h-28"
+          className="min-h-28 leading-relaxed"
           aria-label="输入"
         />
       </Panel>

@@ -63,7 +63,8 @@ export function LiveClock({ tz, onUse }: { tz: string; onUse: (epochMs: number) 
             </span>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        {/* 窄屏四个按钮排成 2×2，免得「转换」单独掉到第二行 */}
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
           <Button
             variant={paused ? 'primary' : 'secondary'}
             icon={paused ? <Play /> : <Pause />}

@@ -86,7 +86,8 @@ export default function JsonToTypes() {
   const stats = result.ok ? result.stats : null
   const objects = result.ok && result.model ? result.model.objects : []
 
-  const badges: { key: string; node: ReactNode }[] = []
+  // secondary：双栏且较窄（lg～xl）时隐藏，免得输出栏标题折成两行、与输入栏错开（可选 / 可空在下方「类型一览」里也能看到）
+  const badges: { key: string; node: ReactNode; secondary?: boolean }[] = []
   if (stats && !pending) {
     badges.push({
       key: 'types',
@@ -100,21 +101,33 @@ export default function JsonToTypes() {
     if (stats.optional > 0)
       badges.push({
         key: 'opt',
+        secondary: true,
         node: <Badge color="var(--sys-orange)">{stats.optional} 个可选</Badge>,
       })
     if (stats.nullable > 0)
       badges.push({
         key: 'null',
+        secondary: true,
         node: <Badge color="var(--sys-purple)">{stats.nullable} 个可空</Badge>,
       })
     if (stats.samples > 1)
       badges.push({
         key: 'samples',
+        secondary: true,
         node: (
-          <Badge color="var(--sys-teal)">
-            <Layers className="size-3" />
-            {stats.jsonLines ? 'JSON Lines · ' : ''}合并 {stats.samples.toLocaleString()} 个样本
-          </Badge>
+          <span
+            className="inline-flex"
+            title={
+              stats.jsonLines
+                ? '按 JSON Lines 解析：每行一个样本，字段已合并'
+                : '顶层数组的各元素已合并为一个类型'
+            }
+          >
+            <Badge color="var(--sys-teal)">
+              <Layers className="size-3" />
+              合并 {stats.samples.toLocaleString()} 个样本
+            </Badge>
+          </span>
         ),
       })
   }
@@ -153,17 +166,15 @@ export default function JsonToTypes() {
         </label>
         <label className="flex items-center gap-2">
           <span className="text-[13px] whitespace-nowrap text-fg-2">根类型名</span>
-          <div className="w-32">
-            <Input
-              value={prefs.rootName}
-              onChange={(e) => set({ rootName: e.target.value })}
-              placeholder="Root"
-              mono
-              spellCheck={false}
-              aria-label="根类型名"
-              className="h-8! px-2.5!"
-            />
-          </div>
+          <Input
+            value={prefs.rootName}
+            onChange={(e) => set({ rootName: e.target.value })}
+            placeholder="Root"
+            mono
+            spellCheck={false}
+            aria-label="根类型名"
+            className="h-8 w-32 px-2.5"
+          />
         </label>
         <Button
           size="sm"
@@ -287,7 +298,7 @@ export default function JsonToTypes() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.6 }}
                     transition={spring}
-                    className="inline-flex"
+                    className={cn('inline-flex', b.secondary && 'lg:max-xl:hidden')}
                   >
                     {b.node}
                   </motion.span>

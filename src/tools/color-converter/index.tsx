@@ -168,7 +168,7 @@ export default function ColorConverter() {
           <ColorSwatch
             color={info.rgb}
             textColor={textOnSwatch}
-            className="h-48 rounded-3xl ring-1 ring-line ring-inset sm:h-60 lg:h-auto lg:min-h-60 lg:flex-1"
+            className="h-48 rounded-3xl sm:h-60 lg:h-auto lg:min-h-60 lg:flex-1"
           >
             <div className="flex h-full flex-col justify-between p-5">
               <div className="flex items-center justify-between gap-2 text-xs font-semibold opacity-80">

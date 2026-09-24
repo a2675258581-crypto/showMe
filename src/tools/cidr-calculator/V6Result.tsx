@@ -47,7 +47,7 @@ function Pow2({ bits, exact }: { bits: number; exact: string }) {
   if (bits <= 20) return <>{exact}</>
   return (
     <>
-      2<sup className="ml-px align-super text-[0.62em]">{bits}</sup>
+      2<sup className="ml-px text-[0.62em]">{bits}</sup>
     </>
   )
 }

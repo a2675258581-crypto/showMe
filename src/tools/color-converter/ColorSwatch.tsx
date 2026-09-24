@@ -45,6 +45,11 @@ export function ColorSwatch({
           {children}
         </motion.div>
       )}
+      {/* 描边放在最上层：容器自身的内阴影会被上面的色块盖住，白色等浅色时就看不出边界 */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-line ring-inset"
+      />
     </div>
   )
 }

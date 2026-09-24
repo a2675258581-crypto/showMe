@@ -177,7 +177,7 @@ export default function XmlFormatter() {
           onChange={(v) => patch({ keepComments: v })}
           label={<span className="text-[13px]">保留注释</span>}
         />
-        <span title="没有内容的元素写成 <tag/>；关闭时保持原来的写法">
+        <span className="flex" title="没有内容的元素写成 <tag/>；关闭时保持原来的写法">
           <Switch
             checked={opts.selfClose}
             onChange={(v) => patch({ selfClose: v })}

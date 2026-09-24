@@ -97,13 +97,11 @@ export default function CurlConverter() {
   const editor = editorLangFor(info.lang)
   const inputEditor = editorLangFor('shell')
 
-  const moreOptions = [
-    { value: '', label: '更多语言…' },
-    ...CODE_TARGETS.filter((t) => !TOP.includes(t.id)).map((t) => ({
-      value: t.id,
-      label: t.label,
-    })),
-  ]
+  const topOptions = TOP.map((id) => ({ value: id, label: CODE_TARGET_MAP[id].label }))
+  const restOptions = CODE_TARGETS.filter((t) => !TOP.includes(t.id)).map((t) => ({
+    value: t.id,
+    label: t.label,
+  }))
 
   const openInApiClient = () => {
     if (!parsed?.ok) return
@@ -120,22 +118,33 @@ export default function CurlConverter() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2.5 rounded-3xl border border-line bg-surface px-4 py-3 shadow-card">
         <span className="text-xs font-semibold tracking-wide text-fg-2">目标语言</span>
-        <div className="no-scrollbar max-w-full overflow-x-auto">
-          <SegmentedControl
-            size="sm"
-            aria-label="常用语言"
-            value={target}
-            onChange={setTarget}
-            options={TOP.map((id) => ({ value: id, label: CODE_TARGET_MAP[id].label }))}
-          />
-        </div>
+        {/* 窄屏放不下四段分段控件，改用一个分组下拉框 */}
+        <Select
+          size="sm"
+          aria-label="目标语言"
+          value={target}
+          onChange={(v) => setTarget(v as CodeTarget)}
+          groups={[
+            { label: '常用', options: topOptions },
+            { label: '更多语言', options: restOptions },
+          ]}
+          className="min-w-40 flex-1 sm:hidden"
+        />
+        <SegmentedControl
+          size="sm"
+          aria-label="常用语言"
+          value={target}
+          onChange={setTarget}
+          options={topOptions}
+          className="hidden sm:inline-flex"
+        />
         <Select
           size="sm"
           aria-label="更多语言"
           value={TOP.includes(target) ? '' : target}
           onChange={(v) => v && setTarget(v as CodeTarget)}
-          options={moreOptions}
-          className="min-w-40"
+          options={[{ value: '', label: '更多语言…' }, ...restOptions]}
+          className="hidden min-w-40 sm:inline-flex"
         />
         <Button
           variant="primary"
@@ -143,7 +152,7 @@ export default function CurlConverter() {
           icon={<Send />}
           disabled={!parsed?.ok}
           onClick={openInApiClient}
-          className="sm:ml-auto"
+          className="w-full sm:ml-auto sm:w-auto"
         >
           在 API 调试中打开
         </Button>
@@ -200,7 +209,7 @@ export default function CurlConverter() {
           }
           footer={
             <>
-              <span>{input.length.toLocaleString()} 字符</span>
+              <span className="shrink-0">{input.length.toLocaleString()} 字符</span>
               <span className="truncate">
                 支持 bash / zsh、Windows cmd 与 Chrome「复制为 cURL」
               </span>

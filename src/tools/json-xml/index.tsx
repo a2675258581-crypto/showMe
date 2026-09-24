@@ -144,6 +144,18 @@ export default function JsonXml() {
 
   const rootInvalid = toXml && prefs.rootName.trim() !== '' && !isXmlName(prefs.rootName.trim())
 
+  const resetButton = (
+    <Button
+      size="sm"
+      variant="ghost"
+      iconOnly
+      icon={<RotateCcw />}
+      title="恢复默认选项"
+      aria-label="恢复默认选项"
+      onClick={() => setStored((p) => ({ ...DEFAULT_PREFS, direction: sanitize(p).direction }))}
+    />
+  )
+
   const toolbar = (
     <>
       <SegmentedControl<XmlDirection>
@@ -170,52 +182,49 @@ export default function JsonXml() {
         </Opt>
         {toXml && (
           <Opt key="root" label="根元素">
-            <div className="w-24">
-              <Input
-                value={prefs.rootName}
-                onChange={(e) => set({ rootName: e.target.value })}
-                placeholder="root"
-                mono
-                spellCheck={false}
-                aria-label="根元素名"
-                aria-invalid={rootInvalid}
-                title="JSON 顶层有多个键、是数组或基本值时，用这个元素包裹"
-                className={cn('h-8! px-2.5!', rootInvalid && 'border-danger!')}
-              />
-            </div>
+            <Input
+              value={prefs.rootName}
+              onChange={(e) => set({ rootName: e.target.value })}
+              placeholder="root"
+              mono
+              spellCheck={false}
+              aria-label="根元素名"
+              aria-invalid={rootInvalid}
+              title="JSON 顶层有多个键、是数组或基本值时，用这个元素包裹"
+              className={cn(
+                'h-8 w-24 px-2.5',
+                rootInvalid && 'border-danger focus:border-danger focus:ring-danger/15',
+              )}
+            />
           </Opt>
         )}
         <Opt key="prefix" label="属性前缀">
-          <div className="w-16">
-            <Input
-              value={prefs.attrPrefix}
-              onChange={(e) => set({ attrPrefix: e.target.value })}
-              placeholder="无"
-              mono
-              spellCheck={false}
-              aria-label="属性前缀"
-              title={
-                toXml
-                  ? '以此前缀开头的键会成为 XML 属性，留空则不生成属性'
-                  : 'XML 属性转成 JSON 键时加的前缀，留空则与子元素混在一起'
-              }
-              className="h-8! px-2.5!"
-            />
-          </div>
+          <Input
+            value={prefs.attrPrefix}
+            onChange={(e) => set({ attrPrefix: e.target.value })}
+            placeholder="无"
+            mono
+            spellCheck={false}
+            aria-label="属性前缀"
+            title={
+              toXml
+                ? '以此前缀开头的键会成为 XML 属性，留空则不生成属性'
+                : 'XML 属性转成 JSON 键时加的前缀，留空则与子元素混在一起'
+            }
+            className="h-8 w-16 px-2.5"
+          />
         </Opt>
         <Opt key="text" label="文本键">
-          <div className="w-20">
-            <Input
-              value={prefs.textKey}
-              onChange={(e) => set({ textKey: e.target.value })}
-              placeholder="#text"
-              mono
-              spellCheck={false}
-              aria-label="文本节点键名"
-              title="元素同时有属性和文本时，文本放在这个键下"
-              className="h-8! px-2.5!"
-            />
-          </div>
+          <Input
+            value={prefs.textKey}
+            onChange={(e) => set({ textKey: e.target.value })}
+            placeholder="#text"
+            mono
+            spellCheck={false}
+            aria-label="文本节点键名"
+            title="元素同时有属性和文本时，文本放在这个键下"
+            className="h-8 w-20 px-2.5"
+          />
         </Opt>
         {toXml ? (
           <Opt key="decl">
@@ -254,19 +263,6 @@ export default function JsonXml() {
             />
           </Opt>
         )}
-        <Opt key="reset" className="ml-auto">
-          <Button
-            size="sm"
-            variant="ghost"
-            iconOnly
-            icon={<RotateCcw />}
-            title="恢复默认选项"
-            aria-label="恢复默认选项"
-            onClick={() =>
-              setStored((p) => ({ ...DEFAULT_PREFS, direction: sanitize(p).direction }))
-            }
-          />
-        </Opt>
       </AnimatePresence>
     </>
   )
@@ -300,6 +296,7 @@ export default function JsonXml() {
         acceptFile=".json,.xml,.svg,.rss,.atom,.plist,text/*"
         downloadName={outXml ? 'converted.xml' : 'converted.json'}
         toolbar={toolbar}
+        toolbarEnd={resetButton}
         outputFooter={
           <>
             <span>

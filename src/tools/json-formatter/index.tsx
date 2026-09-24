@@ -272,14 +272,17 @@ export default function JsonFormatter() {
               label={<span className="text-[13px]">键排序</span>}
             />
           )}
-          <span title="允许注释、尾随逗号、单引号、无引号键名、十六进制、NaN / Infinity（JSON5 风格），输出仍是标准 JSON">
+          <span
+            className="flex"
+            title="允许注释、尾随逗号、单引号、无引号键名、十六进制、NaN / Infinity（JSON5 风格），输出仍是标准 JSON"
+          >
             <Switch
               checked={opts.lenient}
               onChange={(v) => patch({ lenient: v })}
               label={<span className="text-[13px]">宽松模式</span>}
             />
           </span>
-          <span title="把中文等非 ASCII 字符写成 \uXXXX 形式">
+          <span className="flex" title="把中文等非 ASCII 字符写成 \uXXXX 形式">
             <Switch
               checked={opts.escapeUnicode}
               onChange={(v) => patch({ escapeUnicode: v })}
@@ -373,6 +376,7 @@ export default function JsonFormatter() {
                   value={view}
                   onChange={(v) => patch({ view: v })}
                   aria-label="输出视图"
+                  // sm 分段控件比标题栏按钮高 2px：抵消掉，免得输出栏标题比输入栏高、两侧正文错开
                   className="mr-1"
                 />
               )}

@@ -181,7 +181,8 @@ export function CompareModal({ data, onClose }: { data: CompareData; onClose: ()
                 e.preventDefault()
               }}
               className="glass absolute top-1/2 flex size-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-line-strong text-fg shadow-float transition-transform active:scale-95"
-              style={{ left: `${pos}%` }}
+              // 拖到两端时把手不被裁掉一半（分隔线本身仍在真实位置）
+              style={{ left: `clamp(1.25rem, ${pos}%, calc(100% - 1.25rem))` }}
             >
               <ChevronsLeftRight className="size-4" />
             </div>

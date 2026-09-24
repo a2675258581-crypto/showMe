@@ -508,19 +508,19 @@ function ImagePreview({ url }: { url?: string }) {
 
 function HeadersTable({ headers }: { headers: [string, string][] }) {
   if (!headers.length) return <Placeholder text="没有响应头" />
+  // 宽屏左右两列；窄屏名称在上、值在下，避免把 content-length 这类名称从中间折断
   return (
-    <table className="w-full table-fixed text-left text-[13px]">
-      <tbody>
-        {headers.map(([k, v], i) => (
-          <tr key={`${k}-${i}`} className="border-b border-line last:border-0 odd:bg-fill-2/40">
-            <td className="w-[36%] px-4 py-2 align-top font-mono font-medium break-all text-fg sm:w-[28%] sm:px-5">
-              {k}
-            </td>
-            <td className="px-4 py-2 align-top font-mono break-all text-fg-2 sm:px-5">{v}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <dl className="font-mono text-[13px]">
+      {headers.map(([k, v], i) => (
+        <div
+          key={`${k}-${i}`}
+          className="grid gap-x-6 gap-y-0.5 border-b border-line px-4 py-2 last:border-0 odd:bg-fill-2/40 sm:grid-cols-[28%_minmax(0,1fr)] sm:px-5"
+        >
+          <dt className="font-medium break-all text-fg">{k}</dt>
+          <dd className="break-all text-fg-2">{v}</dd>
+        </div>
+      ))}
+    </dl>
   )
 }
 

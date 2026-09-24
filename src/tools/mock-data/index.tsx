@@ -235,7 +235,7 @@ export default function MockData() {
               onBlur={() => setCountDraft(null)}
               aria-label="行数"
               mono
-              className="mr-1 h-9! w-24!"
+              className="mr-1 h-9 w-24"
             />
             {QUICK_COUNTS.map((n) => (
               <button
@@ -289,7 +289,7 @@ export default function MockData() {
                   onChange={(e) => update({ sql: { ...s.sql, table: e.target.value } })}
                   placeholder="mock_data"
                   mono
-                  className="h-9! w-36!"
+                  className="h-9 w-36"
                 />
               </label>
               <label className="flex flex-col gap-1.5">
@@ -312,7 +312,7 @@ export default function MockData() {
                   }}
                   onBlur={() => setBatchDraft(null)}
                   mono
-                  className="h-9! w-24!"
+                  className="h-9 w-24"
                 />
               </label>
               <div className="flex flex-col gap-1.5">

@@ -83,7 +83,7 @@ export function FieldRow({
           placeholder={`field_${index + 1}`}
           aria-label="字段名"
           mono
-          className="h-9! min-w-0 flex-1 sm:max-w-48"
+          className="h-9 min-w-0 flex-1 sm:max-w-48"
         />
         <div className="hidden shrink-0 sm:block">
           <TypeSelect value={field.type} onChange={onTypeChange} />
@@ -220,7 +220,7 @@ function OptionControl({
             onChange={(e) => onChange(e.target.value)}
             aria-label={spec.label}
             mono
-            className="h-8! w-24! px-2.5!"
+            className="h-8 w-24 px-2.5"
           />
         </label>
       )
@@ -239,7 +239,7 @@ function OptionControl({
             onChange={(e) => onChange(e.target.value)}
             aria-label={spec.label}
             mono
-            className={cn('h-8! px-2.5!', spec.wide ? 'min-w-0 flex-1' : 'w-44!')}
+            className={cn('h-8 px-2.5', spec.wide ? 'min-w-0 flex-1' : 'w-44')}
           />
         </label>
       )

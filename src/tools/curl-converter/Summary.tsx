@@ -109,30 +109,25 @@ function Section({
   )
 }
 
+/** 键值列表：宽屏左右两列；窄屏键在上、值在下，避免把 accept-language 这类键名从中间折断 */
 function KVTable({ rows }: { rows: [string, string][] }) {
   return (
-    <div className="thin-scrollbar max-h-72 overflow-auto rounded-2xl border border-line">
-      <table className="w-full table-fixed text-left text-[13px]">
-        <tbody>
-          {rows.map(([k, v], i) => (
-            <motion.tr
-              key={`${k}-${i}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: Math.min(i * 0.015, 0.3) }}
-              className="border-b border-line last:border-0 odd:bg-fill-2/40"
-            >
-              <td className="w-[38%] px-3 py-2 align-top font-mono font-medium break-all text-fg sm:w-[30%]">
-                {k}
-              </td>
-              <td className="px-3 py-2 align-top font-mono break-all text-fg-2">
-                {v === '' ? <span className="text-fg-3 italic">（空）</span> : v}
-              </td>
-            </motion.tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <dl className="thin-scrollbar max-h-96 overflow-auto rounded-2xl border border-line font-mono text-[13px] sm:max-h-72">
+      {rows.map(([k, v], i) => (
+        <motion.div
+          key={`${k}-${i}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: Math.min(i * 0.015, 0.3) }}
+          className="grid gap-x-6 gap-y-0.5 border-b border-line px-3 py-2 last:border-0 odd:bg-fill-2/40 sm:grid-cols-[30%_minmax(0,1fr)]"
+        >
+          <dt className="font-medium break-all text-fg">{k}</dt>
+          <dd className="break-all text-fg-2">
+            {v === '' ? <span className="text-fg-3 italic">（空）</span> : v}
+          </dd>
+        </motion.div>
+      ))}
+    </dl>
   )
 }
 

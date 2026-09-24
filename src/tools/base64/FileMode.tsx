@@ -200,7 +200,7 @@ function EncodeFile({ dataUrl, wrap, set }: { dataUrl: boolean; wrap: boolean; s
               mono
               value={preview}
               aria-label="Base64 结果"
-              className="min-h-44 max-h-80 text-xs break-all"
+              className="max-h-80 min-h-44 text-xs leading-relaxed break-all"
             />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -325,7 +325,7 @@ function DecodeFile() {
         onChange={(e) => update(e.target.value)}
         placeholder="粘贴 Base64，或 data:image/png;base64,… 形式的 Data URL"
         aria-label="Base64 输入"
-        className="min-h-44 max-h-80 text-xs break-all"
+        className="max-h-80 min-h-44 text-xs leading-relaxed break-all"
       />
       <ErrorNotice error={decoded && !decoded.ok ? decoded.error : null} className="mt-3" />
 

@@ -140,7 +140,7 @@ export default function HttpStatusTool() {
             }}
             placeholder="输入状态码或关键词，如 404、限流、Retry-After"
             aria-label="搜索状态码"
-            className="h-14 w-full rounded-2xl border border-line bg-surface-2 pr-20 pl-12 text-base text-fg outline-none transition-[border-color,box-shadow] placeholder:text-fg-3 focus:border-accent focus:ring-4 focus:ring-accent/15"
+            className="h-14 w-full rounded-2xl border border-line bg-surface-2 px-12 text-base text-fg outline-none transition-[border-color,box-shadow] placeholder:text-fg-3 focus:border-accent focus:ring-4 focus:ring-accent/15"
           />
           <div className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-1.5">
             <AnimatePresence initial={false}>

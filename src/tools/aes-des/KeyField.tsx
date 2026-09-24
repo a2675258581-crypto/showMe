@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Dices, Eye, EyeOff } from 'lucide-react'
 import { Input, SegmentedControl } from '@/components/ui'
@@ -56,11 +56,19 @@ export function KeyField({
 }: Props) {
   const [reveal, setReveal] = useState(false)
   const inputLabel = typeof label === 'string' ? label : undefined
-  // 输入框右侧叠放的徽标与按钮所占宽度
-  const buttons = (secret ? 1 : 0) + (onRandom ? 1 : 0)
-  const padRight = status?.text
-    ? ['pr-32', 'pr-40', 'pr-48'][buttons]
-    : [undefined, 'pr-10', 'pr-18'][buttons]
+  // 输入框右侧叠放的徽标与按钮宽度随文字变化（如「32 字节 · AES-256」），
+  // 按实测宽度留出右内边距，文字不会钻到半透明徽标底下
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const [overlayWidth, setOverlayWidth] = useState(0)
+  useLayoutEffect(() => {
+    const el = overlayRef.current
+    if (!el) return
+    const measure = () => setOverlayWidth(el.offsetWidth)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
   return (
     <div className={cn('flex min-w-0 flex-col gap-1.5', className)}>
       {/* 标签行：控件放不下时整体换到下一行靠右，而不是把标签挤成竖排 */}
@@ -94,12 +102,11 @@ export function KeyField({
           placeholder={placeholder}
           aria-label={inputLabel}
           aria-invalid={invalid}
-          className={cn(
-            padRight,
-            invalid && 'border-danger/60! focus:border-danger! focus:ring-danger/15!',
-          )}
+          // 叠层距右边 6px，再留 6px 间隙
+          style={overlayWidth ? { paddingRight: overlayWidth + 12 } : undefined}
+          className={cn(invalid && 'border-danger/60! focus:border-danger! focus:ring-danger/15!')}
         />
-        <div className="absolute inset-y-0 right-1.5 flex items-center gap-0.5">
+        <div ref={overlayRef} className="absolute inset-y-0 right-1.5 flex items-center gap-0.5">
           <AnimatePresence mode="popLayout" initial={false}>
             {status && status.text && (
               <motion.span

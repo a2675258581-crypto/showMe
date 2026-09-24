@@ -106,7 +106,7 @@ export function DecodePanel({ text, onText }: Props) {
             '粘贴 data:image/png;base64,…、原始 Base64、SVG 源码，\n或带 url("…") / <img src="…"> / ![](…) 包裹的写法'
           }
           aria-label="Data URL 或 Base64"
-          className="min-h-72 text-xs break-all"
+          className="min-h-72 text-xs leading-relaxed break-all"
         />
         <p className="mt-2 text-xs text-fg-3">
           {text
