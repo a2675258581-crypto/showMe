@@ -60,7 +60,13 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
   }
   const parsed = validateProxyRequest(payload)
   if (typeof parsed === 'string') return send(res, 400, { ok: false, error: parsed, timeMs: 0 })
-  const result = await forward(parsed)
+  // 浏览器取消或断开连接时，一并中止上游请求
+  const abort = new AbortController()
+  res.on('close', () => {
+    if (!res.writableFinished) abort.abort()
+  })
+  const result = await forward(parsed, fetch, abort.signal)
+  if (res.destroyed) return
   send(res, 200, result)
 }
 

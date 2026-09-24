@@ -54,6 +54,10 @@ const DROP_REQUEST_HEADERS = new Set([
 
 export const DEFAULT_TIMEOUT_MS = 30_000
 export const MAX_TIMEOUT_MS = 120_000
+/** 响应体上限：再大就停止接收，免得把开发服务器的内存吃光 */
+export const MAX_RESPONSE_BYTES = 50 * 1024 * 1024
+/** 客户端没指定 User-Agent 时使用（否则 Node 会发出 `node`，部分服务会拒绝） */
+export const DEFAULT_USER_AGENT = 'showMe-API-Client/1.0'
 
 export function validateProxyRequest(input: unknown): ProxyRequest | string {
   if (!input || typeof input !== 'object') return '请求格式错误'
@@ -93,14 +97,26 @@ export function validateProxyRequest(input: unknown): ProxyRequest | string {
   }
 }
 
+/**
+ * 转发请求。`signal` 用于客户端中途取消（例如浏览器点了「取消」、连接断开），
+ * 这时会同时中止上游请求，而不是让它一直跑到超时。
+ */
 export async function forward(
   req: ProxyRequest,
   fetchImpl: typeof fetch = fetch,
+  signal?: AbortSignal,
 ): Promise<ProxyResult> {
   const started = performance.now()
   const controller = new AbortController()
   const timeoutMs = req.timeoutMs ?? DEFAULT_TIMEOUT_MS
-  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  let timedOut = false
+  const timer = setTimeout(() => {
+    timedOut = true
+    controller.abort()
+  }, timeoutMs)
+  const onClientAbort = () => controller.abort()
+  if (signal?.aborted) controller.abort()
+  else signal?.addEventListener('abort', onClientAbort, { once: true })
   try {
     const headers = new Headers()
     for (const [name, value] of req.headers ?? []) {
@@ -112,6 +128,7 @@ export async function forward(
         return fail(started, `请求头无效：${key}`)
       }
     }
+    if (!headers.has('user-agent')) headers.set('user-agent', DEFAULT_USER_AGENT)
     const hasBody = req.method !== 'GET' && req.method !== 'HEAD' && !!req.bodyBase64
     const res = await fetchImpl(req.url, {
       method: req.method,
@@ -120,7 +137,11 @@ export async function forward(
       redirect: req.followRedirects === false ? 'manual' : 'follow',
       signal: controller.signal,
     })
-    const buf = Buffer.from(await res.arrayBuffer())
+    const buf = await readCapped(res, MAX_RESPONSE_BYTES)
+    if (!buf) {
+      controller.abort()
+      return fail(started, `响应体过大（超过 ${MAX_RESPONSE_BYTES / 1024 / 1024} MB），已停止接收`)
+    }
     const resHeaders: [string, string][] = []
     res.headers.forEach((value, name) => resHeaders.push([name, value]))
     // Node 的 getSetCookie 能拿到多条 set-cookie，forEach 会把它们合并
@@ -142,11 +163,32 @@ export async function forward(
       timeMs: Math.round(performance.now() - started),
     }
   } catch (err) {
-    if (controller.signal.aborted) return fail(started, `请求超时（${timeoutMs} ms）`)
+    if (timedOut) return fail(started, `请求超时（${timeoutMs} ms）`)
+    if (controller.signal.aborted) return fail(started, '请求已取消')
     return fail(started, describeError(err))
   } finally {
     clearTimeout(timer)
+    signal?.removeEventListener('abort', onClientAbort)
   }
+}
+
+/** 流式读取响应体；超过上限时返回 null 并取消读取 */
+async function readCapped(res: Response, limit: number): Promise<Buffer | null> {
+  if (!res.body) return Buffer.alloc(0)
+  const reader = res.body.getReader()
+  const chunks: Uint8Array[] = []
+  let size = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    size += value.byteLength
+    if (size > limit) {
+      await reader.cancel().catch(() => {})
+      return null
+    }
+    chunks.push(value)
+  }
+  return Buffer.concat(chunks, size)
 }
 
 function fail(started: number, error: string): ProxyFailure {

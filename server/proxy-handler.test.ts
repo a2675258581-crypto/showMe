@@ -3,6 +3,8 @@ import type { AddressInfo } from 'node:net'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import {
   DEFAULT_TIMEOUT_MS,
+  DEFAULT_USER_AGENT,
+  MAX_RESPONSE_BYTES,
   MAX_TIMEOUT_MS,
   forward,
   validateProxyRequest,
@@ -315,5 +317,59 @@ describe('forward', () => {
       ok: false,
       error: 'plain failure',
     })
+  })
+})
+
+describe('forward() — 取消、响应上限与默认 UA', () => {
+  it('sends a default User-Agent unless the client sets one', async () => {
+    const plain = await forward({ method: 'GET', url: `${base}/echo` })
+    const echoed = JSON.parse(Buffer.from((plain as ProxySuccess).bodyBase64, 'base64').toString())
+    expect(echoed.headers['user-agent']).toBe(DEFAULT_USER_AGENT)
+    const custom = await forward({
+      method: 'GET',
+      url: `${base}/echo`,
+      headers: [['User-Agent', 'curl/8.0']],
+    })
+    const echoed2 = JSON.parse(
+      Buffer.from((custom as ProxySuccess).bodyBase64, 'base64').toString(),
+    )
+    expect(echoed2.headers['user-agent']).toBe('curl/8.0')
+  })
+
+  it('aborts the upstream request when the client signal fires', async () => {
+    const ac = new AbortController()
+    setTimeout(() => ac.abort(), 50)
+    const r = await forward(
+      { method: 'GET', url: `${base}/slow`, timeoutMs: 10_000 },
+      fetch,
+      ac.signal,
+    )
+    expect(r).toMatchObject({ ok: false, error: '请求已取消' })
+    expect(r.timeMs).toBeLessThan(1000)
+  })
+
+  it('handles an already-aborted signal', async () => {
+    const ac = new AbortController()
+    ac.abort()
+    const r = await forward({ method: 'GET', url: `${base}/echo` }, fetch, ac.signal)
+    expect(r).toMatchObject({ ok: false, error: '请求已取消' })
+  })
+
+  it('stops reading bodies larger than the cap', async () => {
+    const chunk = new Uint8Array(1024 * 1024)
+    let sent = 0
+    const huge = (async () =>
+      new Response(
+        new ReadableStream<Uint8Array>({
+          pull(c) {
+            sent += chunk.byteLength
+            c.enqueue(chunk)
+            if (sent > MAX_RESPONSE_BYTES + chunk.byteLength * 2) c.close()
+          },
+        }),
+      )) as unknown as typeof fetch
+    const r = await forward({ method: 'GET', url: 'http://a.dev/' }, huge)
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.error).toContain('响应体过大')
   })
 })
