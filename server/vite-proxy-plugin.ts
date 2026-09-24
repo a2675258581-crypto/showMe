@@ -22,8 +22,33 @@ export function proxyPlugin(): Plugin {
   }
 }
 
+/** 回环地址：127.0.0.0/8、::1 以及 IPv4 映射形式 */
+export function isLoopback(address: string | undefined): boolean {
+  if (!address) return false
+  const a = address.replace(/^::ffff:/i, '')
+  return a === '::1' || /^127(?:\.\d{1,3}){3}$/.test(a)
+}
+
+/**
+ * 代理默认只服务本机：`vite --host` 暴露到局域网时，其它设备的请求一律拒绝，
+ * 避免同一网络里的人借它访问你本机能访问的内网地址。确需局域网使用时设置 SHOWME_PROXY_ALLOW_LAN=1。
+ */
+export function isAllowedClient(
+  address: string | undefined,
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  return isLoopback(address) || env.SHOWME_PROXY_ALLOW_LAN === '1'
+}
+
 export async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
   const path = (req.url ?? '/').split('?')[0]
+  if (!isAllowedClient(req.socket.remoteAddress)) {
+    return send(res, 403, {
+      ok: false,
+      error: '本地代理只接受本机请求（需要局域网访问时设置环境变量 SHOWME_PROXY_ALLOW_LAN=1）',
+      timeMs: 0,
+    })
+  }
   if (req.method === 'GET' && (path === '/ping' || path === '/ping/')) {
     return send(res, 200, { ok: true })
   }

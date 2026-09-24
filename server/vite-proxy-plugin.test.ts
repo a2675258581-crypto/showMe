@@ -1,7 +1,7 @@
 import { createServer, request as httpRequest, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { PROXY_PATH, handle, proxyPlugin } from './vite-proxy-plugin'
+import { PROXY_PATH, handle, isAllowedClient, isLoopback, proxyPlugin } from './vite-proxy-plugin'
 
 /**
  * connect 的 use(PROXY_PATH, fn) 会把前缀从 req.url 里去掉，
@@ -206,5 +206,21 @@ describe('proxyPlugin()', () => {
     ;(plugin.configurePreviewServer as (s: unknown) => void)(fake)
     expect(mounted).toEqual([PROXY_PATH, PROXY_PATH])
     expect(PROXY_PATH).toBe('/__proxy')
+  })
+})
+
+describe('client address check', () => {
+  it('recognises loopback addresses', () => {
+    for (const a of ['127.0.0.1', '127.1.2.3', '::1', '::ffff:127.0.0.1'])
+      expect(isLoopback(a)).toBe(true)
+    for (const a of ['192.168.1.5', '10.0.0.1', '::ffff:192.168.1.5', 'fe80::1', '', undefined]) {
+      expect(isLoopback(a)).toBe(false)
+    }
+  })
+
+  it('rejects LAN clients unless explicitly allowed', () => {
+    expect(isAllowedClient('192.168.1.5', {})).toBe(false)
+    expect(isAllowedClient('192.168.1.5', { SHOWME_PROXY_ALLOW_LAN: '1' })).toBe(true)
+    expect(isAllowedClient('127.0.0.1', {})).toBe(true)
   })
 })

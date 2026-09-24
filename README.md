@@ -110,6 +110,8 @@ npm run dev          # http://localhost:5173
 
 - `GET /__proxy/ping` 用于探测代理是否可用；不可用时前端自动退回浏览器直连。
 - 只接受同源页面发来的 `application/json` 请求，防止别的网页借用它。
+- 只接受来自本机回环地址的请求：即使用 `npm run dev -- --host` 暴露到局域网，其它设备也用不了代理（会自动退回浏览器直连）；确需局域网使用时设置 `SHOWME_PROXY_ALLOW_LAN=1`。
+- 借助 Vite 自带的 Host 校验，DNS 重绑定攻击会在进入代理前被拦截（403）。
 - **它会替你请求任意地址，只应在本机使用，不要把开发服务器暴露到公网。**
 - 转发逻辑 `server/proxy-handler.ts` 与框架无关，以后部署到 Vercel / Cloudflare 时可以直接包成一个 Serverless 函数复用。
 
