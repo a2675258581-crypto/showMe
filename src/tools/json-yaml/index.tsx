@@ -16,7 +16,7 @@ import {
   type JsonYamlOptions,
 } from '@/lib/json-yaml'
 import { JSON_SAMPLE, YAML_SAMPLE } from '@/lib/json-yaml-samples'
-import { ErrorPanel, StaleOverlay, WarningList } from '@/tools/code-formatter/ErrorPanel'
+import { ErrorPanel, StaleOverlay, WarningList } from '@/components/editor/ErrorPanel'
 
 interface Prefs extends JsonYamlOptions {
   direction: Direction

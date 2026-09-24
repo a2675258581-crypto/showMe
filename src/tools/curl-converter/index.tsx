@@ -22,7 +22,7 @@ import { readClipboard } from '@/lib/clipboard'
 import { parseCurl } from '@/lib/curl'
 import { downloadText } from '@/lib/file'
 import { CODE_TARGETS, CODE_TARGET_MAP, generateCode, type CodeTarget } from '@/lib/http-codegen'
-import { editorLangFor } from './highlight'
+import { editorLangFor } from '@/components/editor/streamLangs'
 import { Summary } from './Summary'
 
 const SAMPLES: { id: string; label: string; value: string }[] = [

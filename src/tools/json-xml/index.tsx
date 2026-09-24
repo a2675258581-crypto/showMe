@@ -16,7 +16,7 @@ import {
   type XmlDirection,
   type XmlIndent,
 } from '@/lib/json-xml'
-import { ErrorPanel, StaleOverlay, WarningList } from '@/tools/code-formatter/ErrorPanel'
+import { ErrorPanel, StaleOverlay, WarningList } from '@/components/editor/ErrorPanel'
 import { JSON_SAMPLE, XML_SAMPLE } from './samples'
 
 interface Prefs extends JsonXmlOptions {

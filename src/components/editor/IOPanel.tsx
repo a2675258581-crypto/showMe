@@ -137,6 +137,8 @@ export function IOPanel({
   height = EDITOR_HEIGHT,
 }: IOPanelProps) {
   const [spin, setSpin] = useState(0)
+  // 没有有效输出时交换没有意义（还会把错误状态带过去）
+  const canSwap = !!output && !error
 
   const openFile = () => {
     const el = document.createElement('input')
@@ -230,7 +232,8 @@ export function IOPanel({
           <motion.button
             type="button"
             aria-label="交换输入与输出"
-            title="交换输入与输出"
+            title={canSwap ? '交换输入与输出' : '有结果后才能交换'}
+            disabled={!canSwap}
             onClick={() => {
               setSpin((s) => s + 180)
               onSwap()
@@ -239,7 +242,7 @@ export function IOPanel({
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.92 }}
             transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-            className="glass absolute top-1/2 left-1/2 z-10 hidden size-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-line text-fg shadow-float lg:flex"
+            className="glass absolute top-1/2 left-1/2 z-10 hidden size-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-line text-fg shadow-float disabled:pointer-events-none disabled:opacity-40 lg:flex"
           >
             <ArrowLeftRight className="size-4" />
           </motion.button>
@@ -257,6 +260,7 @@ export function IOPanel({
                   variant="ghost"
                   icon={<ArrowLeftRight />}
                   onClick={onSwap}
+                  disabled={!canSwap}
                   className="lg:hidden"
                 >
                   交换

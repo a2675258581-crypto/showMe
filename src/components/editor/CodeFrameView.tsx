@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { CircleAlert } from 'lucide-react'
-import { codeFrame, type CodeFrameLine } from '@/lib/json-formatter-position'
+import { codeFrame, type CodeFrameLine } from '@/lib/text-position'
 import { cn } from '@/lib/cn'
 
 interface Props {

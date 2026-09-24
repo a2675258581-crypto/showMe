@@ -29,7 +29,7 @@ import {
   type RecordArrayCandidate,
 } from '@/lib/json-csv'
 import type { ConvertIssue } from '@/lib/json-yaml'
-import { ErrorPanel, StaleOverlay, WarningList } from '@/tools/code-formatter/ErrorPanel'
+import { ErrorPanel, StaleOverlay, WarningList } from '@/components/editor/ErrorPanel'
 import { DataTable } from './DataTable'
 import { CSV_SAMPLE, JSON_SAMPLE } from './samples'
 

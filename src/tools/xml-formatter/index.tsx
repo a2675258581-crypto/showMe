@@ -15,7 +15,7 @@ import {
 import { useDebounced } from '@/hooks/useDebounced'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { formatBytes } from '@/lib/file'
-import { columnToUtf16, utf8Length } from '@/lib/json-formatter-position'
+import { columnToUtf16, utf8Length } from '@/lib/text-position'
 import {
   DEFAULT_XML_OPTIONS,
   formatXml,
@@ -25,7 +25,7 @@ import {
   type XmlIssue,
 } from '@/lib/xml-formatter'
 import { XML_SAMPLES, type XmlSampleId } from '@/lib/xml-formatter-samples'
-import { CodeFrameView } from '../json-formatter/CodeFrameView'
+import { CodeFrameView } from '@/components/editor/CodeFrameView'
 
 type Mode = 'format' | 'minify'
 

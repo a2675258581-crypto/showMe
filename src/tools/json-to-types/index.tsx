@@ -16,7 +16,7 @@ import {
   type TypeGenOptions,
 } from '@/lib/json-to-types-render'
 import type { ObjectDef } from '@/lib/json-to-types'
-import { ErrorPanel, StaleOverlay } from '@/tools/code-formatter/ErrorPanel'
+import { ErrorPanel, StaleOverlay } from '@/components/editor/ErrorPanel'
 import { highlightFor } from './highlight'
 import { SAMPLE } from './samples'
 

@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  LineIndex,
-  codeFrame,
-  columnToUtf16,
-  positionAt,
-  utf8Length,
-} from './json-formatter-position'
+import { LineIndex, codeFrame, columnToUtf16, positionAt, utf8Length } from './text-position'
 
 describe('positionAt / LineIndex', () => {
   const text = 'ab\ncd\r\nef\rg😀h'

@@ -9,12 +9,14 @@
 - `npm run typecheck` / `npm run lint` / `npm test`（vitest，覆盖 `src/lib` 与 `server`）
 - `npm run build && npm run preview` 生产构建预览（同样带 `/__proxy`）
 - `npm run e2e` Playwright 冒烟测试（Chromium 在 `/opt/pw-browsers`，不要 `playwright install`）
+- 临时的浏览器验证脚本与截图放 `.verify/`（已 gitignore，lint/prettier 也忽略）；并行起多个 dev server 时用 `VITE_CACHE_DIR=node_modules/.vite-xxx` 隔离依赖缓存
 
 ## 目录约定
 
 - `src/tools/registry.ts`：所有工具的唯一登记处（id、名称、分类、关键词、图标、懒加载组件）。
 - `src/tools/<id>/index.tsx`：工具页面，**默认导出**组件。只写工具主体——标题、图标、面包屑、收藏由 `pages/ToolPage.tsx` 统一渲染。工具私有的子组件放在同目录。
 - `src/lib/*.ts`：纯逻辑（不依赖 React/DOM，能在 Node 里跑），每个模块配 `*.test.ts`。参考实现：`lib/case.ts` + `tools/case-converter`。
+  注意 `src/lib/*.test.ts` 由 `tsconfig.app.json` 做类型检查（没有 Node 类型），测试里不要用 `Buffer` 或 `node:*`；需要 Node API 的测试放 `server/`。
 - `server/`：Node 端代码（`/__proxy` 转发），`proxy-handler.ts` 与框架无关。
 - 路径别名 `@/` → `src/`。
 
@@ -22,6 +24,9 @@
 
 - 组件从 `@/components/ui` 引入：`Button`（胶囊，variant primary/secondary/ghost/danger/outline，size sm/md/lg）、`SegmentedControl`（iOS 分段）、`Switch`、`Select`、`Input`/`TextArea`（`mono`）、`Field`、`Panel`/`PanelHeader`、`CopyButton`、`Tabs`、`Slider`、`Notice`/`ErrorNotice`、`DropZone`、`Badge`/`Kbd`、`useToast()`。
 - 编辑器：`@/components/editor/CodeEditor`（CodeMirror，`lang` 按需加载）；输入/输出双栏用 `@/components/editor/IOPanel`（自带粘贴/示例/清空/交换/复制/下载/拖入文件与错误提示），自定义布局用 `EditorPane`。
+  带行列与代码片段的错误展示用 `editor/ErrorPanel`（`ErrorPanel`/`StaleOverlay`/`WarningList`）和 `editor/CodeFrameView`；行列换算在 `lib/text-position.ts`，代码帧在 `lib/code-formatter-frame.ts`。
+  Shell/Python/Go/Java/PHP/Rust/Swift/C# 的轻量高亮见 `editor/streamLangs.ts`（`editorLangFor`）。
+- `cn()` 基于 tailwind-merge：冲突的类以后传入的为准，调用方的 `className` 可以直接覆盖组件默认样式（新的主题值要在 `lib/cn.ts` 里登记）。
 - 颜色只用设计 token：`bg-bg / bg-surface / bg-surface-2 / bg-fill / text-fg / text-fg-2 / text-fg-3 / border-line / text-accent / bg-accent / text-danger / text-success / text-sys-*`。不要写死 `#fff`、`gray-500` 之类，否则深色模式会坏。
 - 卡片：`rounded-3xl border border-line bg-surface shadow-card`；小块 `rounded-2xl`。等宽内容加 `font-mono`。
 - 动画用 `motion/react`，弹簧优先；全站已包 `MotionConfig reducedMotion="user"`。

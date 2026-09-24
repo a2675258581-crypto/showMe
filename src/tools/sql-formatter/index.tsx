@@ -25,7 +25,7 @@ import {
   type SqlOptions,
 } from '@/lib/sql-formatter'
 import { SQL_SAMPLE } from '@/lib/sql-formatter-samples'
-import { ErrorPanel, StaleOverlay, WarningList } from '@/tools/code-formatter/ErrorPanel'
+import { ErrorPanel, StaleOverlay, WarningList } from '@/components/editor/ErrorPanel'
 
 interface Prefs extends SqlOptions {
   /** 是否展开「更多选项」 */

@@ -7,7 +7,7 @@
  * - 转义 / 去转义（支持多层转义）、JSONPath、统计
  */
 
-import { LineIndex, positionAt, utf8Length } from './json-formatter-position'
+import { LineIndex, positionAt, utf8Length } from './text-position'
 
 export { utf8Length }
 

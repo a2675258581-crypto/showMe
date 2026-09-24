@@ -6,7 +6,7 @@ import {
   WidgetType,
   type DecorationSet,
 } from '@codemirror/view'
-import { columnToUtf16 } from '@/lib/json-formatter-position'
+import { columnToUtf16 } from '@/lib/text-position'
 
 /** 错误位置（行列号从 1 开始，列按码点计） */
 export interface ErrorMark {

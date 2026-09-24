@@ -5,7 +5,7 @@
  * 自闭合标签、属性（保留原引号）、实体引用校验；错误信息带行列号。
  */
 
-import { LineIndex } from './json-formatter-position'
+import { LineIndex } from './text-position'
 
 /* ───────────────────────── 类型 ───────────────────────── */
 

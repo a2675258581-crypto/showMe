@@ -60,7 +60,7 @@ import {
   SAMPLE_JSON5,
   SAMPLE_UNESCAPE,
 } from '@/lib/json-formatter-samples'
-import { CodeFrameView } from './CodeFrameView'
+import { CodeFrameView } from '@/components/editor/CodeFrameView'
 import { createEditorHandle, errorExtensions, jumpToMark, showErrorMark } from './editorError'
 import { JsonTree } from './JsonTree'
 

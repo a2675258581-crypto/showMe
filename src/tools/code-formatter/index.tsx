@@ -21,7 +21,7 @@ import {
   type OptionKey,
 } from '@/lib/code-formatter'
 import { CODE_SAMPLES } from '@/lib/code-formatter-samples'
-import { ErrorPanel, StaleOverlay } from './ErrorPanel'
+import { ErrorPanel, StaleOverlay } from '@/components/editor/ErrorPanel'
 
 type LangChoice = CodeLang | 'auto'
 
