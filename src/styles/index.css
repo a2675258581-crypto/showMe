@@ -138,6 +138,30 @@
   --animate-blob: blob 22s ease-in-out infinite alternate;
   --animate-shimmer: shimmer 2.4s linear infinite;
   --animate-float: float 6s ease-in-out infinite;
+  --animate-marquee: marquee 60s linear infinite;
+  --animate-marquee-reverse: marquee 60s linear infinite reverse;
+  --animate-pulse-glow: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.08);
+  }
 }
 
 @keyframes gradient-pan {
