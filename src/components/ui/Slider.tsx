@@ -10,12 +10,23 @@ interface Props {
   /** 右侧显示的数值格式 */
   format?: (v: number) => string
   className?: string
+  disabled?: boolean
 }
 
-export function Slider({ value, onChange, min, max, step = 1, label, format, className }: Props) {
+export function Slider({
+  value,
+  onChange,
+  min,
+  max,
+  step = 1,
+  label,
+  format,
+  className,
+  disabled,
+}: Props) {
   const pct = ((value - min) / (max - min)) * 100
   return (
-    <div className={cn('flex flex-col gap-2', className)}>
+    <div className={cn('flex flex-col gap-2', disabled && 'opacity-40', className)}>
       {(label || format) && (
         <div className="flex items-center justify-between text-xs">
           <span className="font-semibold tracking-wide text-fg-2">{label}</span>
@@ -28,9 +39,10 @@ export function Slider({ value, onChange, min, max, step = 1, label, format, cla
         max={max}
         step={step}
         value={value}
+        disabled={disabled}
         aria-label={label}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-fill [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow-md [&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-[0_1px_4px_rgb(0_0_0/0.3),0_0_0_0.5px_rgb(0_0_0/0.06)]"
+        className="h-1.5 w-full cursor-pointer appearance-none disabled:cursor-not-allowed rounded-full bg-fill [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow-md [&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-[0_1px_4px_rgb(0_0_0/0.3),0_0_0_0.5px_rgb(0_0_0/0.06)]"
         style={{
           background: `linear-gradient(to right, var(--accent) ${pct}%, var(--fill) ${pct}%)`,
         }}

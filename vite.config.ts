@@ -2,7 +2,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import { proxyPlugin } from './server/vite-proxy-plugin'
+import { proxyPlugin } from './server/vite-proxy-plugin.ts'
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), proxyPlugin()],

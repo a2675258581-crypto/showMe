@@ -47,7 +47,7 @@ export function CodePanel({
         <CodeEditor
           value={code}
           readOnly
-          lang={lang === 'python' || lang === 'php' ? 'text' : 'javascript'}
+          lang={lang}
           lineNumbers={false}
           lineWrapping={false}
           height="auto"

@@ -24,6 +24,8 @@ export interface CodeEditorProps {
   extensions?: Extension[]
   autoFocus?: boolean
   'aria-label'?: string
+  /** 拿到底层 EditorView（用于定位错误、滚动到指定位置等） */
+  onCreateEditor?: (view: EditorView) => void
 }
 
 /** 带语法高亮的代码编辑器（CodeMirror 6），明暗主题自动切换 */
@@ -42,7 +44,10 @@ export function CodeEditor({
   extensions,
   autoFocus,
   'aria-label': ariaLabel,
+  onCreateEditor,
 }: CodeEditorProps) {
+  // CodeMirror 内部统一用 \n；传入 CRLF 会让受控值与文档永远对不上
+  const doc = useMemo(() => (value.includes('\r') ? value.replace(/\r\n?/g, '\n') : value), [value])
   const dark = useIsDark()
   const [langExt, setLangExt] = useState<Extension[]>([])
 
@@ -64,8 +69,9 @@ export function CodeEditor({
 
   return (
     <CodeMirror
-      value={value}
+      value={doc}
       onChange={onChange}
+      onCreateEditor={onCreateEditor}
       readOnly={readOnly}
       editable={!readOnly}
       placeholder={placeholder}

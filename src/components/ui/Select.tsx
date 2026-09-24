@@ -7,18 +7,33 @@ export interface SelectOption {
   label: string
 }
 
+export interface SelectGroup {
+  label: string
+  options: readonly SelectOption[]
+}
+
 interface Props extends Omit<
   SelectHTMLAttributes<HTMLSelectElement>,
   'onChange' | 'size' | 'value'
 > {
-  options: readonly SelectOption[]
+  options?: readonly SelectOption[]
+  /** 分组选项，渲染为 <optgroup>（与 options 可同时使用，options 在前） */
+  groups?: readonly SelectGroup[]
   value: string
   onChange: (v: string) => void
   size?: 'sm' | 'md'
 }
 
 /** 原生 select 套苹果外观（可访问性和移动端体验最好） */
-export function Select({ options, value, onChange, size = 'md', className, ...rest }: Props) {
+export function Select({
+  options = [],
+  groups,
+  value,
+  onChange,
+  size = 'md',
+  className,
+  ...rest
+}: Props) {
   return (
     <div className={cn('relative inline-flex', className)}>
       <select
@@ -34,6 +49,15 @@ export function Select({ options, value, onChange, size = 'md', className, ...re
           <option key={o.value} value={o.value}>
             {o.label}
           </option>
+        ))}
+        {groups?.map((g) => (
+          <optgroup key={g.label} label={g.label}>
+            {g.options.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </optgroup>
         ))}
       </select>
       <ChevronDown className="pointer-events-none absolute top-1/2 right-3 size-3.5 -translate-y-1/2 text-fg-2" />

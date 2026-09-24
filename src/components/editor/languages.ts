@@ -17,6 +17,14 @@ export type EditorLang =
   | 'markdown'
   | 'yaml'
   | 'graphql'
+  | 'shell'
+  | 'python'
+  | 'go'
+  | 'java'
+  | 'php'
+  | 'rust'
+  | 'swift'
+  | 'csharp'
 
 const cache = new Map<EditorLang, Promise<Extension[]>>()
 
@@ -59,6 +67,16 @@ async function load(lang: EditorLang): Promise<Extension[]> {
       return [(await import('@codemirror/lang-markdown')).markdown()]
     case 'yaml':
       return [(await import('@codemirror/lang-yaml')).yaml()]
+    case 'graphql':
+    case 'shell':
+    case 'python':
+    case 'go':
+    case 'java':
+    case 'php':
+    case 'rust':
+    case 'swift':
+    case 'csharp':
+      return (await import('./streamLangs')).streamLanguage(lang)
     default:
       return []
   }

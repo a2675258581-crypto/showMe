@@ -16,6 +16,7 @@ interface Props<T extends string> {
   className?: string
   /** 撑满父容器宽度，选项等分 */
   block?: boolean
+  disabled?: boolean
   'aria-label'?: string
 }
 
@@ -27,6 +28,7 @@ export function SegmentedControl<T extends string>({
   size = 'md',
   className,
   block,
+  disabled,
   ...aria
 }: Props<T>) {
   const id = useId()
@@ -34,9 +36,11 @@ export function SegmentedControl<T extends string>({
     <div
       role="radiogroup"
       aria-label={aria['aria-label']}
+      aria-disabled={disabled || undefined}
       className={cn(
         'relative inline-flex rounded-full bg-fill p-[3px]',
         block && 'flex w-full',
+        disabled && 'pointer-events-none opacity-40',
         className,
       )}
     >
@@ -48,6 +52,7 @@ export function SegmentedControl<T extends string>({
             type="button"
             role="radio"
             aria-checked={active}
+            disabled={disabled}
             title={o.title}
             onClick={() => onChange(o.value)}
             className={cn(

@@ -33,7 +33,7 @@ test('首页渲染且无报错', async ({ page }) => {
 test('全部工具页可搜索', async ({ page }) => {
   const errors = collectErrors(page)
   await page.goto('/tools')
-  await page.getByLabel('搜索工具').first().fill('md5')
+  await page.getByRole('textbox', { name: '搜索工具' }).fill('md5')
   await expect(page.getByRole('heading', { name: '哈希计算' })).toBeVisible()
   expect(errors).toEqual([])
 })

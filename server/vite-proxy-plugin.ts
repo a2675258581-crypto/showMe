@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
-import { forward, validateProxyRequest } from './proxy-handler'
+import { forward, validateProxyRequest } from './proxy-handler.ts'
 
 export const PROXY_PATH = '/__proxy'
 const MAX_BODY_BYTES = 50 * 1024 * 1024

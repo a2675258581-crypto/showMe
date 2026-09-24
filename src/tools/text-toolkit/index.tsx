@@ -18,7 +18,7 @@ import { readClipboard } from '@/lib/clipboard'
 import { cn } from '@/lib/cn'
 import { downloadText, formatBytes } from '@/lib/file'
 import { countLines, formatReadingTime, textStats } from '@/lib/text-toolkit'
-import { AnimatedNumber } from './AnimatedNumber'
+import { AnimatedNumber } from '@/components/motion/AnimatedNumber'
 import { OpOptions } from './OpOptions'
 import {
   ALL_OPS,

@@ -39,7 +39,7 @@ export function Notice({
       )}
     >
       {t.icon}
-      <div className="min-w-0 break-words whitespace-pre-wrap">{children}</div>
+      <div className="min-w-0 flex-1 break-words whitespace-pre-wrap">{children}</div>
     </motion.div>
   )
 }
@@ -49,7 +49,8 @@ export function ErrorNotice({ error, className }: { error?: string | null; class
   return (
     <AnimatePresence>
       {error ? (
-        <Notice key={error} tone="error" className={className}>
+        // 固定 key：错误文字变化时原地更新，避免新旧两条同时出现
+        <Notice key="error" tone="error" className={className}>
           {error}
         </Notice>
       ) : null}

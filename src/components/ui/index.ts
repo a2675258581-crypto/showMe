@@ -1,7 +1,7 @@
 export { Button } from './Button'
 export { SegmentedControl, type SegmentOption } from './SegmentedControl'
 export { Switch } from './Switch'
-export { Select, type SelectOption } from './Select'
+export { Select, type SelectGroup, type SelectOption } from './Select'
 export { Input, TextArea } from './Input'
 export { Field } from './Field'
 export { Panel, PanelHeader } from './Panel'

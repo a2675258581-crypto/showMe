@@ -265,16 +265,36 @@ const LANGS: Partial<Record<CodeLang, StreamParser<unknown>>> = {
   }) as StreamParser<unknown>,
 }
 
-const cache = new Map<CodeLang, Extension[]>()
+const graphql = cLike({
+  keywords: [
+    'query mutation subscription fragment on type interface union enum input scalar schema extend directive implements repeatable',
+  ],
+  types: ['Int Float String Boolean ID'],
+  atoms: ['true false null'],
+  lineComment: ['#'],
+}) as StreamParser<unknown>
 
-/** 生成代码在 CodeEditor 里的语言设置：JS 用内置语言包，其它用这里的 StreamLanguage */
-export function editorLangFor(lang: CodeLang): { lang: EditorLang; extensions?: Extension[] } {
-  if (lang === 'javascript') return { lang: 'javascript' }
-  let ext = cache.get(lang)
+/** 共享编辑器可直接使用的 StreamLanguage（见 languages.ts） */
+export type StreamLangName = Exclude<CodeLang, 'javascript'> | 'graphql'
+
+const STREAMS: Record<StreamLangName, StreamParser<unknown> | undefined> = {
+  ...(LANGS as Record<Exclude<CodeLang, 'javascript'>, StreamParser<unknown>>),
+  graphql,
+}
+
+const cache = new Map<StreamLangName, Extension[]>()
+
+export function streamLanguage(name: StreamLangName): Extension[] {
+  let ext = cache.get(name)
   if (!ext) {
-    const parser = LANGS[lang]
+    const parser = STREAMS[name]
     ext = parser ? [StreamLanguage.define(parser)] : []
-    cache.set(lang, ext)
+    cache.set(name, ext)
   }
-  return { lang: 'text', extensions: ext }
+  return ext
+}
+
+/** 生成代码在 CodeEditor 里的语言设置：JS 用内置语言包，其它直接用对应的 EditorLang */
+export function editorLangFor(lang: CodeLang): { lang: EditorLang; extensions?: Extension[] } {
+  return { lang }
 }

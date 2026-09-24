@@ -158,7 +158,7 @@ export function IOPanel({
           {toolbar}
         </div>
       )}
-      <div className="relative grid gap-4 lg:grid-cols-2">
+      <div className={cn('relative grid gap-4 lg:grid-cols-2', onSwap && 'lg:gap-12')}>
         <EditorPane
           title={inputTitle}
           height={height}

@@ -8,6 +8,7 @@ export function Field({
   children,
   className,
   action,
+  htmlFor,
 }: {
   label: ReactNode
   hint?: ReactNode
@@ -15,11 +16,19 @@ export function Field({
   className?: string
   /** 标签右侧的小操作（如复制按钮） */
   action?: ReactNode
+  /** 关联控件的 id，提供后标签渲染为 <label htmlFor>，控件因此获得可访问名称 */
+  htmlFor?: string
 }) {
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
       <div className="flex min-h-6 items-center justify-between gap-2">
-        <span className="text-xs font-semibold tracking-wide text-fg-2">{label}</span>
+        {htmlFor ? (
+          <label htmlFor={htmlFor} className="text-xs font-semibold tracking-wide text-fg-2">
+            {label}
+          </label>
+        ) : (
+          <span className="text-xs font-semibold tracking-wide text-fg-2">{label}</span>
+        )}
         {action}
       </div>
       {children}

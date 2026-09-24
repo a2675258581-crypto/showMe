@@ -19,8 +19,12 @@ export const Input = forwardRef<
 
 export const TextArea = forwardRef<
   HTMLTextAreaElement,
-  TextareaHTMLAttributes<HTMLTextAreaElement> & { mono?: boolean }
->(function TextArea({ className, mono, ...rest }, ref) {
+  TextareaHTMLAttributes<HTMLTextAreaElement> & {
+    mono?: boolean
+    /** 高度随内容增长（field-sizing: content），不显示拖拽手柄 */
+    autoGrow?: boolean
+  }
+>(function TextArea({ className, mono, autoGrow, ...rest }, ref) {
   return (
     <textarea
       ref={ref}
@@ -28,6 +32,7 @@ export const TextArea = forwardRef<
       className={cn(
         base,
         'thin-scrollbar min-h-32 resize-y py-3 leading-relaxed',
+        autoGrow && '[field-sizing:content] min-h-0 resize-none',
         mono && 'font-mono text-[13px]',
         className,
       )}
