@@ -68,11 +68,16 @@ function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = []
     let size = 0
+    let tooLarge = false
     req.on('data', (chunk: Buffer) => {
+      if (tooLarge) return
       size += chunk.length
       if (size > MAX_BODY_BYTES) {
+        // 不要 req.destroy()：那会直接断开连接，客户端只能看到 ECONNRESET 而收不到 413。
+        // 这里丢弃剩余数据，让 handle() 正常回复 413。
+        tooLarge = true
+        chunks.length = 0
         reject(new Error('请求体过大（上限 50 MB）'))
-        req.destroy()
         return
       }
       chunks.push(chunk)
