@@ -6,6 +6,8 @@ import { proxyPlugin } from './server/vite-proxy-plugin'
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), proxyPlugin()],
+  // 允许多个 dev server 并行时各用各的依赖预构建缓存
+  cacheDir: process.env.VITE_CACHE_DIR ?? 'node_modules/.vite',
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
