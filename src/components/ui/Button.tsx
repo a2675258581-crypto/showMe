@@ -34,7 +34,16 @@ const iconSizes: Record<Size, string> = {
 
 /** 苹果式胶囊按钮，按下时轻微缩小 */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = 'secondary', size = 'md', icon, iconOnly, className, children, type = 'button', ...rest },
+  {
+    variant = 'secondary',
+    size = 'md',
+    icon,
+    iconOnly,
+    className,
+    children,
+    type = 'button',
+    ...rest
+  },
   ref,
 ) {
   return (

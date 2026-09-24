@@ -91,7 +91,11 @@ export function GlobalNav() {
 
           <ul className="hidden items-center gap-1 md:flex">
             <li>
-              <NavLink to="/tools" onMouseEnter={scheduleClose} active={location.pathname === '/tools' && !location.search}>
+              <NavLink
+                to="/tools"
+                onMouseEnter={scheduleClose}
+                active={location.pathname === '/tools' && !location.search}
+              >
                 全部工具
               </NavLink>
             </li>
@@ -147,7 +151,9 @@ export function GlobalNav() {
       </header>
 
       {/* 移动端全屏菜单 */}
-      <AnimatePresence>{mobileOpen && <MobileMenu onSearch={() => (setMobileOpen(false), palette.open())} />}</AnimatePresence>
+      <AnimatePresence>
+        {mobileOpen && <MobileMenu onSearch={() => (setMobileOpen(false), palette.open())} />}
+      </AnimatePresence>
     </>
   )
 }
@@ -193,7 +199,10 @@ function Flyout({ id }: { id: CategoryId }) {
       >
         <div className="mb-2 text-xs font-medium text-fg-3">探索{cat.name}</div>
         <div className="text-2xl font-semibold tracking-tight text-fg">{cat.tagline}</div>
-        <Link to={`/tools?c=${id}`} className="mt-4 inline-flex items-center gap-1 text-sm text-link hover:underline">
+        <Link
+          to={`/tools?c=${id}`}
+          className="mt-4 inline-flex items-center gap-1 text-sm text-link hover:underline"
+        >
           查看全部 {tools.length} 款 <ChevronRight className="size-3.5" />
         </Link>
       </motion.div>
@@ -258,21 +267,25 @@ function MobileMenu({ onSearch }: { onSearch: () => void }) {
         <Search className="size-5" /> 搜索工具
       </button>
       <ul className="flex flex-col gap-1">
-        {[{ to: '/tools', label: '全部工具' }, ...CATEGORIES.map((c) => ({ to: `/tools?c=${c.id}`, label: c.name }))].map(
-          (item, i) => (
-            <motion.li
-              key={item.to}
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.4, delay: 0.04 + i * 0.04, ease: [0.16, 1, 0.3, 1] }}
+        {[
+          { to: '/tools', label: '全部工具' },
+          ...CATEGORIES.map((c) => ({ to: `/tools?c=${c.id}`, label: c.name })),
+        ].map((item, i) => (
+          <motion.li
+            key={item.to}
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.4, delay: 0.04 + i * 0.04, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <Link
+              to={item.to}
+              className="block py-2 text-[28px] font-semibold tracking-tight text-fg"
             >
-              <Link to={item.to} className="block py-2 text-[28px] font-semibold tracking-tight text-fg">
-                {item.label}
-              </Link>
-            </motion.li>
-          ),
-        )}
+              {item.label}
+            </Link>
+          </motion.li>
+        ))}
       </ul>
     </motion.div>
   )

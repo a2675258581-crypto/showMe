@@ -158,7 +158,9 @@ function describeError(err: unknown): string {
     const cause = (err as Error & { cause?: unknown }).cause
     if (cause instanceof Error) {
       const code = (cause as Error & { code?: string }).code
-      return code ? `${err.message}：${code}（${cause.message}）` : `${err.message}：${cause.message}`
+      return code
+        ? `${err.message}：${code}（${cause.message}）`
+        : `${err.message}：${cause.message}`
     }
     return err.message
   }

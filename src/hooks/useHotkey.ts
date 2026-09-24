@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
 
 export const isMac =
-  typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/i.test(navigator.platform || navigator.userAgent)
+  typeof navigator !== 'undefined' &&
+  /Mac|iPhone|iPad|iPod/i.test(navigator.platform || navigator.userAgent)
 
 /** 平台对应的主修饰键显示：⌘ 或 Ctrl */
 export const modKey = isMac ? '⌘' : 'Ctrl'

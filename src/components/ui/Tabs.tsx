@@ -23,7 +23,10 @@ export function Tabs<T extends string>({
 }) {
   const id = useId()
   return (
-    <div role="tablist" className={cn('no-scrollbar flex gap-1 overflow-x-auto border-b border-line', className)}>
+    <div
+      role="tablist"
+      className={cn('no-scrollbar flex gap-1 overflow-x-auto border-b border-line', className)}
+    >
       {items.map((it) => {
         const active = it.value === value
         return (
@@ -40,7 +43,9 @@ export function Tabs<T extends string>({
           >
             {it.label}
             {it.badge !== undefined && it.badge !== null && it.badge !== 0 && (
-              <span className="rounded-full bg-fill px-1.5 text-[11px] leading-4 text-fg-2">{it.badge}</span>
+              <span className="rounded-full bg-fill px-1.5 text-[11px] leading-4 text-fg-2">
+                {it.badge}
+              </span>
             )}
             {active && (
               <motion.span

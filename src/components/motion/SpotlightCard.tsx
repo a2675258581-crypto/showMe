@@ -12,7 +12,12 @@ interface Props {
 }
 
 /** 悬停时跟随鼠标的聚光高光 + 轻微 3D 倾斜 + 微抬 */
-export function SpotlightCard({ children, className, glow = 'rgb(10 132 255 / 0.18)', tilt = 6 }: Props) {
+export function SpotlightCard({
+  children,
+  className,
+  glow = 'rgb(10 132 255 / 0.18)',
+  tilt = 6,
+}: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const mx = useMotionValue(-999)
   const my = useMotionValue(-999)
@@ -40,7 +45,11 @@ export function SpotlightCard({ children, className, glow = 'rgb(10 132 255 / 0.
         px.set(0.5)
         py.set(0.5)
       }}
-      style={{ rotateX: tilt ? rotateX : 0, rotateY: tilt ? rotateY : 0, transformPerspective: 900 }}
+      style={{
+        rotateX: tilt ? rotateX : 0,
+        rotateY: tilt ? rotateY : 0,
+        transformPerspective: 900,
+      }}
       whileHover={{ y: -4 }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
       className={cn('group relative overflow-hidden', className)}

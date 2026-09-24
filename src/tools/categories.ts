@@ -1,12 +1,4 @@
-import {
-  ArrowLeftRight,
-  Braces,
-  FileText,
-  Globe,
-  Image,
-  KeyRound,
-  ShieldCheck,
-} from 'lucide-react'
+import { ArrowLeftRight, Braces, FileText, Globe, Image, KeyRound, ShieldCheck } from 'lucide-react'
 import type { Category, CategoryId } from './types'
 
 export const CATEGORIES: Category[] = [

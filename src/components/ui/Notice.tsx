@@ -27,7 +27,9 @@ export function Notice({
     <motion.div
       role={tone === 'error' ? 'alert' : 'status'}
       initial={{ opacity: 0, y: -6 }}
-      animate={tone === 'error' ? { opacity: 1, y: 0, x: [0, -6, 6, -4, 4, 0] } : { opacity: 1, y: 0 }}
+      animate={
+        tone === 'error' ? { opacity: 1, y: 0, x: [0, -6, 6, -4, 4, 0] } : { opacity: 1, y: 0 }
+      }
       exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.4 }}
       className={cn(

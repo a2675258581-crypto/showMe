@@ -13,7 +13,14 @@ interface Props {
 }
 
 /** 进入视口时淡入上移（苹果官网滚动出现的效果） */
-export function Reveal({ children, delay = 0, y = 32, className, amount = 0.3, as = 'div' }: Props) {
+export function Reveal({
+  children,
+  delay = 0,
+  y = 32,
+  className,
+  amount = 0.3,
+  as = 'div',
+}: Props) {
   const Comp = motion[as]
   return (
     <Comp

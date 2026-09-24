@@ -8,13 +8,25 @@ const BLOBS = [
 ]
 
 /** 缓慢漂移的模糊彩色光斑背景 */
-export function MeshBackground({ className, intensity = 1 }: { className?: string; intensity?: number }) {
+export function MeshBackground({
+  className,
+  intensity = 1,
+}: {
+  className?: string
+  intensity?: number
+}) {
   return (
-    <div aria-hidden className={cn('pointer-events-none absolute inset-0 overflow-hidden', className)}>
+    <div
+      aria-hidden
+      className={cn('pointer-events-none absolute inset-0 overflow-hidden', className)}
+    >
       {BLOBS.map((b, i) => (
         <div
           key={i}
-          className={cn('absolute animate-blob rounded-full blur-[90px] will-change-transform', b.className)}
+          className={cn(
+            'absolute animate-blob rounded-full blur-[90px] will-change-transform',
+            b.className,
+          )}
           style={{
             background: `radial-gradient(circle at center, ${b.color} 0%, transparent 65%)`,
             opacity: 0.35 * intensity,

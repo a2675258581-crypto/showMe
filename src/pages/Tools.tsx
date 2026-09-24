@@ -19,11 +19,15 @@ export default function ToolsIndex() {
   const recent = useRecent()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useHotkey('/', (e) => {
-    if (document.activeElement === inputRef.current) return
-    e.preventDefault()
-    inputRef.current?.focus()
-  }, { allowInInput: false })
+  useHotkey(
+    '/',
+    (e) => {
+      if (document.activeElement === inputRef.current) return
+      e.preventDefault()
+      inputRef.current?.focus()
+    },
+    { allowInInput: false },
+  )
 
   const setParam = (key: string, value: string | null) => {
     const next = new URLSearchParams(params)
@@ -76,7 +80,12 @@ export default function ToolsIndex() {
             aria-label="搜索工具"
           />
           {q ? (
-            <button type="button" onClick={() => setParam('q', null)} aria-label="清除搜索" className="rounded-full p-1 text-fg-3 hover:bg-fill-2 hover:text-fg">
+            <button
+              type="button"
+              onClick={() => setParam('q', null)}
+              aria-label="清除搜索"
+              className="rounded-full p-1 text-fg-3 hover:bg-fill-2 hover:text-fg"
+            >
               <X className="size-4" />
             </button>
           ) : (
@@ -91,7 +100,12 @@ export default function ToolsIndex() {
           全部
         </Chip>
         {CATEGORIES.map((c) => (
-          <Chip key={c.id} active={cat === c.id} onClick={() => setParam('c', cat === c.id ? null : c.id)} color={c.color}>
+          <Chip
+            key={c.id}
+            active={cat === c.id}
+            onClick={() => setParam('c', cat === c.id ? null : c.id)}
+            color={c.color}
+          >
             <c.icon className="size-3.5" />
             {c.name}
           </Chip>
@@ -104,7 +118,11 @@ export default function ToolsIndex() {
           title="最近使用"
           tools={recentTools.slice(0, 4)}
           action={
-            <button type="button" onClick={recent.clear} className="text-xs text-link hover:underline">
+            <button
+              type="button"
+              onClick={recent.clear}
+              className="text-xs text-link hover:underline"
+            >
               清除
             </button>
           }
@@ -113,7 +131,12 @@ export default function ToolsIndex() {
 
       {showPersonal ? (
         CATEGORIES.map((c) => (
-          <Section key={c.id} title={c.name} subtitle={c.tagline} tools={TOOLS.filter((t) => t.category === c.id)} />
+          <Section
+            key={c.id}
+            title={c.name}
+            subtitle={c.tagline}
+            tools={TOOLS.filter((t) => t.category === c.id)}
+          />
         ))
       ) : (
         <div className="mt-12">
@@ -136,7 +159,11 @@ export default function ToolsIndex() {
             </motion.div>
           </LayoutGroup>
           {results.length === 0 && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 text-center text-fg-2">
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="py-20 text-center text-fg-2"
+            >
               没有找到与「{q}」相关的工具。
             </motion.p>
           )}
@@ -174,7 +201,14 @@ function Chip({
           transition={{ type: 'spring', stiffness: 500, damping: 38 }}
         />
       )}
-      <span className={cn('relative z-[1] inline-flex items-center gap-1.5', active && !color && 'text-bg')}>{children}</span>
+      <span
+        className={cn(
+          'relative z-[1] inline-flex items-center gap-1.5',
+          active && !color && 'text-bg',
+        )}
+      >
+        {children}
+      </span>
     </button>
   )
 }

@@ -46,7 +46,9 @@ async function load(lang: EditorLang): Promise<Extension[]> {
     case 'typescript':
       return [(await import('@codemirror/lang-javascript')).javascript({ typescript: true })]
     case 'tsx':
-      return [(await import('@codemirror/lang-javascript')).javascript({ typescript: true, jsx: true })]
+      return [
+        (await import('@codemirror/lang-javascript')).javascript({ typescript: true, jsx: true }),
+      ]
     case 'css':
     case 'scss':
     case 'less':

@@ -39,7 +39,9 @@ export function ToolCard({ tool, className }: { tool: ToolMeta; className?: stri
         transition={{ type: 'spring', stiffness: 500, damping: 15 }}
         className={cn(
           'absolute right-12 top-5 z-[2] flex size-7 items-center justify-center rounded-full transition-opacity',
-          starred ? 'text-sys-yellow opacity-100' : 'text-fg-3 opacity-0 group-hover:opacity-100 hover:text-fg-2',
+          starred
+            ? 'text-sys-yellow opacity-100'
+            : 'text-fg-3 opacity-0 group-hover:opacity-100 hover:text-fg-2',
         )}
       >
         <Star className="size-4" fill={starred ? 'currentColor' : 'none'} />

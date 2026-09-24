@@ -10,7 +10,11 @@ export function Panel({
 }: HTMLAttributes<HTMLDivElement> & { padded?: boolean; children?: ReactNode }) {
   return (
     <div
-      className={cn('rounded-3xl border border-line bg-surface shadow-card', padded && 'p-5 sm:p-6', className)}
+      className={cn(
+        'rounded-3xl border border-line bg-surface shadow-card',
+        padded && 'p-5 sm:p-6',
+        className,
+      )}
       {...rest}
     >
       {children}

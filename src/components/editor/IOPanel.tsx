@@ -1,6 +1,13 @@
 import { useState, type ReactNode } from 'react'
 import { motion } from 'motion/react'
-import { ArrowLeftRight, ClipboardPaste, Download, FolderOpen, Sparkles, Trash2 } from 'lucide-react'
+import {
+  ArrowLeftRight,
+  ClipboardPaste,
+  Download,
+  FolderOpen,
+  Sparkles,
+  Trash2,
+} from 'lucide-react'
 import { Button, CopyButton, ErrorNotice } from '@/components/ui'
 import { readClipboard } from '@/lib/clipboard'
 import { cn } from '@/lib/cn'
@@ -24,7 +31,15 @@ interface EditorPaneProps {
 }
 
 /** 带标题栏的编辑区卡片，可单独用于自定义布局 */
-export function EditorPane({ title, actions, children, footer, height = EDITOR_HEIGHT, className, onDropFile }: EditorPaneProps) {
+export function EditorPane({
+  title,
+  actions,
+  children,
+  footer,
+  height = EDITOR_HEIGHT,
+  className,
+  onDropFile,
+}: EditorPaneProps) {
   const [over, setOver] = useState(false)
   return (
     <div
@@ -145,12 +160,19 @@ export function IOPanel({
         <EditorPane
           title={inputTitle}
           height={height}
-          onDropFile={acceptFile !== undefined ? async (f) => onInputChange(await f.text()) : undefined}
+          onDropFile={
+            acceptFile !== undefined ? async (f) => onInputChange(await f.text()) : undefined
+          }
           actions={
             <>
               {inputActions}
               {sample !== undefined && (
-                <Button size="sm" variant="ghost" icon={<Sparkles />} onClick={() => onInputChange(sample)}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  icon={<Sparkles />}
+                  onClick={() => onInputChange(sample)}
+                >
                   示例
                 </Button>
               )}
@@ -166,7 +188,15 @@ export function IOPanel({
                 粘贴
               </Button>
               {acceptFile !== undefined && (
-                <Button size="sm" variant="ghost" icon={<FolderOpen />} onClick={openFile} iconOnly title="打开文件" aria-label="打开文件" />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  icon={<FolderOpen />}
+                  onClick={openFile}
+                  iconOnly
+                  title="打开文件"
+                  aria-label="打开文件"
+                />
               )}
               <Button
                 size="sm"
@@ -187,7 +217,13 @@ export function IOPanel({
             </>
           }
         >
-          <CodeEditor value={input} onChange={onInputChange} lang={inputLang} placeholder={inputPlaceholder} aria-label="输入" />
+          <CodeEditor
+            value={input}
+            onChange={onInputChange}
+            lang={inputLang}
+            placeholder={inputPlaceholder}
+            aria-label="输入"
+          />
         </EditorPane>
 
         {onSwap && (
@@ -216,7 +252,13 @@ export function IOPanel({
             <>
               {outputActions}
               {onSwap && (
-                <Button size="sm" variant="ghost" icon={<ArrowLeftRight />} onClick={onSwap} className="lg:hidden">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  icon={<ArrowLeftRight />}
+                  onClick={onSwap}
+                  className="lg:hidden"
+                >
                   交换
                 </Button>
               )}
@@ -245,7 +287,13 @@ export function IOPanel({
           }
         >
           {outputSlot ?? (
-            <CodeEditor value={output} lang={outputLang} readOnly placeholder={outputPlaceholder} aria-label="输出" />
+            <CodeEditor
+              value={output}
+              lang={outputLang}
+              readOnly
+              placeholder={outputPlaceholder}
+              aria-label="输出"
+            />
           )}
         </EditorPane>
       </div>

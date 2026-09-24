@@ -26,7 +26,10 @@ if (typeof window !== 'undefined') {
  * 持久化到 localStorage 的 state（JSON 序列化）。
  * 同一 key 在多个组件 / 多个标签页之间自动同步；读写失败（隐私模式等）时退化为内存值。
  */
-export function useLocalStorage<T>(key: string, initial: T): [T, (v: T | ((prev: T) => T)) => void] {
+export function useLocalStorage<T>(
+  key: string,
+  initial: T,
+): [T, (v: T | ((prev: T) => T)) => void] {
   const subscribe = useCallback(
     (l: Listener) => {
       let set = listeners.get(key)

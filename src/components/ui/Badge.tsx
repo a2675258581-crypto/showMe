@@ -13,7 +13,10 @@ export function Badge({
 }) {
   return (
     <span
-      className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold', className)}
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold',
+        className,
+      )}
       style={{
         color: color ?? 'var(--accent)',
         background: `color-mix(in srgb, ${color ?? 'var(--accent)'} 14%, transparent)`,

@@ -7,7 +7,10 @@ const SAMPLE = 'user profile id\nXMLHttpRequest\nget_http_response_code'
 
 export default function CaseConverter() {
   const [input, setInput] = useState(SAMPLE)
-  const results = useMemo(() => CASE_STYLES.map((s) => ({ ...s, value: convertLines(input, s.id) })), [input])
+  const results = useMemo(
+    () => CASE_STYLES.map((s) => ({ ...s, value: convertLines(input, s.id) })),
+    [input],
+  )
 
   return (
     <div className="flex flex-col gap-4">

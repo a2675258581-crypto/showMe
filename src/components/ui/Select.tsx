@@ -7,7 +7,10 @@ export interface SelectOption {
   label: string
 }
 
-interface Props extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'size' | 'value'> {
+interface Props extends Omit<
+  SelectHTMLAttributes<HTMLSelectElement>,
+  'onChange' | 'size' | 'value'
+> {
   options: readonly SelectOption[]
   value: string
   onChange: (v: string) => void

@@ -3,7 +3,8 @@ import { useLocalStorage } from './useLocalStorage'
 
 export type ThemePref = 'system' | 'light' | 'dark'
 
-const media = typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)') : null
+const media =
+  typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)') : null
 
 function subscribeSystem(cb: () => void) {
   media?.addEventListener('change', cb)
@@ -11,7 +12,11 @@ function subscribeSystem(cb: () => void) {
 }
 
 export function useSystemDark() {
-  return useSyncExternalStore(subscribeSystem, () => !!media?.matches, () => false)
+  return useSyncExternalStore(
+    subscribeSystem,
+    () => !!media?.matches,
+    () => false,
+  )
 }
 
 /** 主题偏好：跟随系统 / 浅色 / 深色，写在 localStorage `theme.v1` */
@@ -28,7 +33,9 @@ export function useTheme() {
   }, [isDark])
 
   const cycle = useCallback(() => {
-    setPref((p) => (p === 'system' ? (systemDark ? 'light' : 'dark') : p === 'light' ? 'dark' : 'light'))
+    setPref((p) =>
+      p === 'system' ? (systemDark ? 'light' : 'dark') : p === 'light' ? 'dark' : 'light',
+    )
   }, [setPref, systemDark])
 
   return { pref, setPref, isDark, cycle }

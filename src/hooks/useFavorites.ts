@@ -4,7 +4,8 @@ import { useLocalStorage } from './useLocalStorage'
 export function useFavorites() {
   const [ids, setIds] = useLocalStorage<string[]>('favorites.v1', [])
   const toggle = useCallback(
-    (id: string) => setIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [id, ...prev])),
+    (id: string) =>
+      setIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [id, ...prev])),
     [setIds],
   )
   const has = useCallback((id: string) => ids.includes(id), [ids])

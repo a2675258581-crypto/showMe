@@ -5,7 +5,11 @@ import type { Extension } from '@codemirror/state'
 
 /** 仿 Xcode 默认配色的语法高亮 */
 const lightHighlight = HighlightStyle.define([
-  { tag: [t.keyword, t.modifier, t.operatorKeyword, t.controlKeyword], color: '#9b2393', fontWeight: '600' },
+  {
+    tag: [t.keyword, t.modifier, t.operatorKeyword, t.controlKeyword],
+    color: '#9b2393',
+    fontWeight: '600',
+  },
   { tag: [t.string, t.special(t.string), t.regexp], color: '#c41a16' },
   { tag: [t.number, t.bool, t.null, t.atom], color: '#1c00cf' },
   { tag: [t.comment, t.lineComment, t.blockComment], color: '#5d6c79', fontStyle: 'italic' },
@@ -23,7 +27,11 @@ const lightHighlight = HighlightStyle.define([
 ])
 
 const darkHighlight = HighlightStyle.define([
-  { tag: [t.keyword, t.modifier, t.operatorKeyword, t.controlKeyword], color: '#ff7ab2', fontWeight: '600' },
+  {
+    tag: [t.keyword, t.modifier, t.operatorKeyword, t.controlKeyword],
+    color: '#ff7ab2',
+    fontWeight: '600',
+  },
   { tag: [t.string, t.special(t.string), t.regexp], color: '#ff8170' },
   { tag: [t.number, t.bool, t.null, t.atom], color: '#d9c97c' },
   { tag: [t.comment, t.lineComment, t.blockComment], color: '#7f8c98', fontStyle: 'italic' },
@@ -47,7 +55,9 @@ function base(dark: boolean) {
       '.cm-content': { caretColor: 'var(--accent)', padding: '12px 0' },
       '.cm-cursor, .cm-dropCursor': { borderLeftColor: 'var(--accent)', borderLeftWidth: '2px' },
       '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': {
-        backgroundColor: dark ? 'rgb(10 132 255 / 0.35) !important' : 'rgb(0 113 227 / 0.2) !important',
+        backgroundColor: dark
+          ? 'rgb(10 132 255 / 0.35) !important'
+          : 'rgb(0 113 227 / 0.2) !important',
       },
       '.cm-matchingBracket': { backgroundColor: 'var(--fill-3)', outline: 'none' },
       '.cm-searchMatch': { backgroundColor: 'rgb(255 214 10 / 0.4)' },

@@ -58,11 +58,17 @@ export default function ToolPage() {
               animate={{ scale: 1, rotate: 0, opacity: 1 }}
               transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.05 }}
             >
-              <ToolIcon tool={tool} size="lg" className="sm:size-16 sm:rounded-[18px] sm:[&_svg]:size-8" />
+              <ToolIcon
+                tool={tool}
+                size="lg"
+                className="sm:size-16 sm:rounded-[18px] sm:[&_svg]:size-8"
+              />
             </motion.div>
             <div className="min-w-0">
               <h1 className="headline text-[28px] text-fg sm:text-[40px]">{tool.name}</h1>
-              <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-fg-2 sm:text-[15px]">{tool.description}</p>
+              <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-fg-2 sm:text-[15px]">
+                {tool.description}
+              </p>
             </div>
           </div>
           <motion.button
@@ -71,10 +77,16 @@ export default function ToolPage() {
             whileTap={{ scale: 0.92 }}
             className={cn(
               'inline-flex h-9 shrink-0 items-center gap-1.5 self-start rounded-full px-4 text-[13px] font-medium transition-colors sm:self-center',
-              starred ? 'bg-sys-yellow/15 text-[color:var(--warning)]' : 'bg-fill text-fg hover:bg-fill-3',
+              starred
+                ? 'bg-sys-yellow/15 text-[color:var(--warning)]'
+                : 'bg-fill text-fg hover:bg-fill-3',
             )}
           >
-            <motion.span animate={starred ? { rotate: [0, -20, 20, 0], scale: [1, 1.3, 1] } : {}} transition={{ duration: 0.45 }} className="flex">
+            <motion.span
+              animate={starred ? { rotate: [0, -20, 20, 0], scale: [1, 1.3, 1] } : {}}
+              transition={{ duration: 0.45 }}
+              className="flex"
+            >
               <Star className="size-4" fill={starred ? 'currentColor' : 'none'} />
             </motion.span>
             {starred ? '已收藏' : '收藏'}
@@ -89,7 +101,9 @@ export default function ToolPage() {
 
         {related.length > 0 && (
           <section className="mt-20">
-            <h2 className="mb-5 text-xl font-semibold tracking-tight text-fg">更多{cat.name}工具</h2>
+            <h2 className="mb-5 text-xl font-semibold tracking-tight text-fg">
+              更多{cat.name}工具
+            </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {related.slice(0, 4).map((t) => (
                 <ToolCard key={t.id} tool={t} />

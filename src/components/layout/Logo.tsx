@@ -26,7 +26,14 @@ export function LogoMark({ className }: { className?: string }) {
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <Link to="/" className={cn('flex items-center gap-2 text-[15px] font-semibold tracking-tight text-fg', className)} aria-label="showMe 首页">
+    <Link
+      to="/"
+      className={cn(
+        'flex items-center gap-2 text-[15px] font-semibold tracking-tight text-fg',
+        className,
+      )}
+      aria-label="showMe 首页"
+    >
       <LogoMark />
       <span>showMe</span>
     </Link>

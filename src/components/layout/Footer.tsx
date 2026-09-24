@@ -8,7 +8,8 @@ export function Footer() {
     <footer className="mt-24 border-t border-line bg-surface-2 text-xs text-fg-2">
       <div className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6">
         <p className="border-b border-line pb-4 leading-relaxed text-fg-3">
-          所有工具均在你的浏览器中本地运行，输入的内容不会上传到任何服务器。「API 调试」通过本机开发服务器转发请求，仅供本地使用。
+          所有工具均在你的浏览器中本地运行，输入的内容不会上传到任何服务器。「API
+          调试」通过本机开发服务器转发请求，仅供本地使用。
         </p>
         <div className="grid grid-cols-2 gap-x-6 gap-y-8 py-8 sm:grid-cols-4 lg:grid-cols-7">
           {CATEGORIES.map((c) => (
@@ -17,7 +18,10 @@ export function Footer() {
               <ul className="flex flex-col gap-2">
                 {toolsByCategory(c.id).map((t) => (
                   <li key={t.id}>
-                    <Link to={`/t/${t.id}`} className="transition-colors hover:text-fg hover:underline">
+                    <Link
+                      to={`/t/${t.id}`}
+                      className="transition-colors hover:text-fg hover:underline"
+                    >
                       {t.name}
                     </Link>
                   </li>

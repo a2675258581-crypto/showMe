@@ -75,7 +75,10 @@ function Palette({ onClose }: { onClose: () => void }) {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
     >
-      <div className="absolute inset-0 bg-black/25 backdrop-blur-sm dark:bg-black/50" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/25 backdrop-blur-sm dark:bg-black/50"
+        onClick={onClose}
+      />
       <motion.div
         role="dialog"
         aria-modal="true"
@@ -99,12 +102,19 @@ function Palette({ onClose }: { onClose: () => void }) {
             <Kbd>esc</Kbd>
           </div>
           <Command.List className="thin-scrollbar max-h-[min(60vh,440px)] overflow-y-auto p-2 [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-fg-3">
-            <Command.Empty className="py-12 text-center text-sm text-fg-2">没有找到相关工具</Command.Empty>
+            <Command.Empty className="py-12 text-center text-sm text-fg-2">
+              没有找到相关工具
+            </Command.Empty>
 
             {!query && recentTools.length > 0 && (
               <Command.Group heading="最近使用">
                 {recentTools.map((t) => (
-                  <ToolItem key={`recent-${t.id}`} id={t.id} value={`recent ${t.id}`} onSelect={() => go(`/t/${t.id}`)} />
+                  <ToolItem
+                    key={`recent-${t.id}`}
+                    id={t.id}
+                    value={`recent ${t.id}`}
+                    onSelect={() => go(`/t/${t.id}`)}
+                  />
                 ))}
               </Command.Group>
             )}
@@ -118,11 +128,36 @@ function Palette({ onClose }: { onClose: () => void }) {
             ))}
 
             <Command.Group heading="操作">
-              <ActionItem icon={<Home />} label="回到首页" value="home 首页 主页" onSelect={() => go('/')} />
-              <ActionItem icon={<LayoutGrid />} label="全部工具" value="all tools 全部工具" onSelect={() => go('/tools')} />
-              <ActionItem icon={<Sun />} label="浅色模式" value="light theme 浅色 主题" onSelect={() => (theme.setPref('light'), onClose())} />
-              <ActionItem icon={<Moon />} label="深色模式" value="dark theme 深色 主题 暗色" onSelect={() => (theme.setPref('dark'), onClose())} />
-              <ActionItem icon={<Monitor />} label="跟随系统外观" value="system theme 系统 主题" onSelect={() => (theme.setPref('system'), onClose())} />
+              <ActionItem
+                icon={<Home />}
+                label="回到首页"
+                value="home 首页 主页"
+                onSelect={() => go('/')}
+              />
+              <ActionItem
+                icon={<LayoutGrid />}
+                label="全部工具"
+                value="all tools 全部工具"
+                onSelect={() => go('/tools')}
+              />
+              <ActionItem
+                icon={<Sun />}
+                label="浅色模式"
+                value="light theme 浅色 主题"
+                onSelect={() => (theme.setPref('light'), onClose())}
+              />
+              <ActionItem
+                icon={<Moon />}
+                label="深色模式"
+                value="dark theme 深色 主题 暗色"
+                onSelect={() => (theme.setPref('dark'), onClose())}
+              />
+              <ActionItem
+                icon={<Monitor />}
+                label="跟随系统外观"
+                value="system theme 系统 主题"
+                onSelect={() => (theme.setPref('system'), onClose())}
+              />
             </Command.Group>
           </Command.List>
           <div className="flex items-center justify-between border-t border-line px-5 py-2.5 text-[11px] text-fg-3">
@@ -149,7 +184,12 @@ const itemClass =
 function ToolItem({ id, value, onSelect }: { id: string; value: string; onSelect: () => void }) {
   const t = TOOL_MAP[id]
   return (
-    <Command.Item value={value} keywords={[t.name, ...t.keywords, t.description]} onSelect={onSelect} className={itemClass}>
+    <Command.Item
+      value={value}
+      keywords={[t.name, ...t.keywords, t.description]}
+      onSelect={onSelect}
+      className={itemClass}
+    >
       <ToolIcon tool={t} size="sm" />
       <div className="min-w-0 flex-1">
         <div className="font-medium">{t.name}</div>
@@ -172,7 +212,9 @@ function ActionItem({
 }) {
   return (
     <Command.Item value={value} onSelect={onSelect} className={itemClass}>
-      <span className="flex size-8 items-center justify-center rounded-[9px] bg-fill [&_svg]:size-4">{icon}</span>
+      <span className="flex size-8 items-center justify-center rounded-[9px] bg-fill [&_svg]:size-4">
+        {icon}
+      </span>
       <span className="font-medium">{label}</span>
     </Command.Item>
   )

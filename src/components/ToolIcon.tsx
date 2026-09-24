@@ -10,7 +10,15 @@ const SIZES = {
 }
 
 /** 仿 App 图标的渐变圆角方块 */
-export function ToolIcon({ tool, size = 'md', className }: { tool: ToolMeta; size?: keyof typeof SIZES; className?: string }) {
+export function ToolIcon({
+  tool,
+  size = 'md',
+  className,
+}: {
+  tool: ToolMeta
+  size?: keyof typeof SIZES
+  className?: string
+}) {
   const cat = CATEGORY_MAP[tool.category]
   const Icon = tool.icon
   return (

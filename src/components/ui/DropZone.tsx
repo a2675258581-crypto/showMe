@@ -13,7 +13,15 @@ interface Props {
 }
 
 /** 拖放 / 点击选择文件区域 */
-export function DropZone({ onFiles, accept, multiple, title = '拖入文件，或点击选择', hint, className, children }: Props) {
+export function DropZone({
+  onFiles,
+  accept,
+  multiple,
+  title = '拖入文件，或点击选择',
+  hint,
+  className,
+  children,
+}: Props) {
   const [over, setOver] = useState(false)
   const input = useRef<HTMLInputElement>(null)
   return (
@@ -35,7 +43,9 @@ export function DropZone({ onFiles, accept, multiple, title = '拖入文件，�
       }}
       className={cn(
         'group flex cursor-pointer flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed p-8 text-center transition-all duration-300',
-        over ? 'scale-[1.01] border-accent bg-accent-soft' : 'border-line-strong bg-surface-2 hover:border-accent/60 hover:bg-fill-2',
+        over
+          ? 'scale-[1.01] border-accent bg-accent-soft'
+          : 'border-line-strong bg-surface-2 hover:border-accent/60 hover:bg-fill-2',
         className,
       )}
     >
