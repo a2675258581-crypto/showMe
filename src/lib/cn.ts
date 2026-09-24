@@ -2,6 +2,9 @@ import { extendTailwindMerge } from 'tailwind-merge'
 
 /** 让 tailwind-merge 认识项目里自定义的主题值，避免把它们误判为别的工具类 */
 const twMerge = extendTailwindMerge({
+  // Tailwind v4 里 leading-* 总会覆盖字号自带的行高，两者并不冲突；
+  // 默认规则会让后出现的 text-[13px] 吞掉前面的 leading-relaxed
+  override: { conflictingClassGroups: { 'font-size': [] } },
   extend: {
     theme: {
       shadow: ['card', 'float'],

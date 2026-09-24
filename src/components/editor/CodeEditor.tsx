@@ -89,7 +89,7 @@ export function CodeEditor({
         highlightActiveLineGutter: !readOnly,
         autocompletion: false,
         searchKeymap: true,
-        bracketMatching: true,
+        bracketMatching: !readOnly,
         closeBrackets: !readOnly,
         indentOnInput: true,
         tabSize: 2,

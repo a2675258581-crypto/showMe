@@ -105,6 +105,8 @@ export interface IOPanelProps {
   acceptFile?: string
   /** 两栏上方的选项工具条 */
   toolbar?: ReactNode
+  /** 固定在工具条右上角的内容（如「恢复默认」），不会单独换到新的一行 */
+  toolbarEnd?: ReactNode
   /** 替换输出编辑器的自定义内容（如树形视图） */
   outputSlot?: ReactNode
   inputActions?: ReactNode
@@ -130,6 +132,7 @@ export function IOPanel({
   downloadName,
   acceptFile,
   toolbar,
+  toolbarEnd,
   outputSlot,
   inputActions,
   outputActions,
@@ -153,9 +156,10 @@ export function IOPanel({
 
   return (
     <div className="flex flex-col gap-4">
-      {toolbar && (
-        <div className="flex flex-wrap items-center gap-2.5 rounded-3xl border border-line bg-surface px-4 py-3 shadow-card">
-          {toolbar}
+      {(toolbar || toolbarEnd) && (
+        <div className="flex items-start gap-2.5 rounded-3xl border border-line bg-surface px-4 py-3 shadow-card">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2.5">{toolbar}</div>
+          {toolbarEnd && <div className="flex shrink-0 items-center">{toolbarEnd}</div>}
         </div>
       )}
       <div className={cn('relative grid gap-4 lg:grid-cols-2', onSwap && 'lg:gap-12')}>
@@ -242,7 +246,7 @@ export function IOPanel({
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.92 }}
             transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-            className="glass absolute top-1/2 left-1/2 z-10 hidden size-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-line text-fg shadow-float disabled:pointer-events-none disabled:opacity-40 lg:flex"
+            className="glass absolute top-1/2 left-1/2 z-10 hidden size-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-line text-fg shadow-[0_4px_14px_rgb(0_0_0/0.12)] disabled:pointer-events-none disabled:opacity-40 lg:flex"
           >
             <ArrowLeftRight className="size-4" />
           </motion.button>

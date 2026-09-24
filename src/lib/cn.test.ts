@@ -23,6 +23,11 @@ describe('cn', () => {
     expect(cn('shadow-sm shadow-accent/20', 'shadow-card')).toBe('shadow-accent/20 shadow-card')
   })
 
+  it('keeps line-height when a font size comes later', () => {
+    expect(cn('leading-relaxed', 'text-[13px]')).toBe('leading-relaxed text-[13px]')
+    expect(cn('leading-6 text-sm', 'leading-8')).toBe('text-sm leading-8')
+  })
+
   it('keeps unknown custom utilities', () => {
     expect(cn('glass headline no-scrollbar', 'thin-scrollbar')).toBe(
       'glass headline no-scrollbar thin-scrollbar',

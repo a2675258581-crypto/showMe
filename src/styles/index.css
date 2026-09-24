@@ -363,6 +363,11 @@ html.lenis body {
 }
 .cm-activeLineGutter,
 .cm-activeLine {
+  background: transparent !important;
+}
+/* 只在编辑器获得焦点时高亮当前行 */
+.cm-focused .cm-activeLineGutter,
+.cm-focused .cm-activeLine {
   background: var(--fill-2) !important;
 }
 .cm-placeholder {

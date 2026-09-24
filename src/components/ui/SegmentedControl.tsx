@@ -38,9 +38,11 @@ export function SegmentedControl<T extends string>({
       aria-label={aria['aria-label']}
       aria-disabled={disabled || undefined}
       className={cn(
-        'relative inline-flex rounded-full bg-fill p-[3px]',
+        // sm 总高 32px，与 Button size="sm" 对齐
+        'relative inline-flex rounded-full bg-fill',
+        size === 'sm' ? 'p-0.5' : 'p-[3px]',
         block && 'flex w-full',
-        disabled && 'pointer-events-none opacity-40',
+        disabled && 'pointer-events-none opacity-50',
         className,
       )}
     >
