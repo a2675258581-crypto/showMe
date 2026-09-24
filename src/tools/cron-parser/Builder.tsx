@@ -155,8 +155,7 @@ export function Builder({
                           const n = Math.max(1, Math.floor(Number(e.target.value) || 1))
                           set({ step: n })
                         }}
-                        className="w-20 text-center"
-                        style={{ height: 32 }}
+                        className="h-8 w-20 text-center"
                         aria-label={`${spec.name}间隔`}
                       />
                       {UNIT[key]}
@@ -224,8 +223,7 @@ export function Builder({
                       value={b.custom}
                       onChange={(e) => set({ custom: e.target.value })}
                       mono
-                      className="max-w-xs"
-                      style={{ height: 32 }}
+                      className="h-8 max-w-xs"
                       placeholder={key === 'dayOfWeek' ? '如 1-5、5L、1#2' : '如 1,15,30 或 1-10/2'}
                       aria-label={`${spec.name}自定义表达式`}
                     />

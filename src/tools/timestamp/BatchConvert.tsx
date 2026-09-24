@@ -136,8 +136,7 @@ export function BatchConvert(p: Props) {
           onChange={(e) => p.onInput(e.target.value)}
           placeholder={'每行一个时间戳或日期，例如：\n1704067200\n2024-01-01 12:00:00'}
           mono
-          className="h-72 lg:h-80"
-          style={{ resize: 'none' }}
+          className="h-72 resize-none lg:h-80"
           aria-label="批量输入"
         />
         <div

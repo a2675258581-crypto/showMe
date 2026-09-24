@@ -445,20 +445,17 @@ export default function ImageCompressor() {
           </Field>
 
           <div className="flex flex-col gap-1.5">
-            {/* PNG 时质量无效：inert 同时屏蔽鼠标与键盘 */}
-            <div
-              inert={qualityUseless}
-              className={cn('transition-opacity', qualityUseless && 'opacity-40')}
-            >
-              <Slider
-                label="质量"
-                value={opts.quality}
-                min={1}
-                max={100}
-                onChange={(v) => set('quality', v)}
-                format={(v) => `${v}%`}
-              />
-            </div>
+            {/* PNG 时质量无效 */}
+            <Slider
+              label="质量"
+              value={opts.quality}
+              min={1}
+              max={100}
+              onChange={(v) => set('quality', v)}
+              format={(v) => `${v}%`}
+              disabled={qualityUseless}
+              className="transition-opacity"
+            />
             <span className="text-xs text-fg-3">
               {qualityUseless
                 ? 'PNG 为无损格式，质量参数不起作用'

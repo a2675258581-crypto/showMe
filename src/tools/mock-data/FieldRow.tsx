@@ -1,5 +1,5 @@
 import { Reorder, useDragControls } from 'motion/react'
-import { ChevronDown, GripVertical, Trash2 } from 'lucide-react'
+import { GripVertical, Trash2 } from 'lucide-react'
 import { Button, Input, Select, Switch } from '@/components/ui'
 import { cn } from '@/lib/cn'
 import {
@@ -147,7 +147,12 @@ function SampleValue({ value }: { value: Cell | undefined }) {
   )
 }
 
-/** 按分组列出字段类型（原生 select + optgroup，外观与 UI 套件一致） */
+/** 按分组列出字段类型（共享 Select 的 optgroup 分组） */
+const TYPE_GROUPS = GROUPS.map((g) => ({
+  label: g,
+  options: FIELD_TYPES.filter((t) => t.group === g).map((t) => ({ value: t.type, label: t.label })),
+}))
+
 function TypeSelect({
   value,
   onChange,
@@ -158,25 +163,13 @@ function TypeSelect({
   className?: string
 }) {
   return (
-    <div className={cn('relative inline-flex shrink-0', className)}>
-      <select
-        value={value}
-        aria-label="字段类型"
-        onChange={(e) => onChange(e.target.value as FieldType)}
-        className="h-9 w-full cursor-pointer appearance-none rounded-full bg-fill pr-8 pl-4 text-[13px] font-medium text-fg outline-none transition-colors hover:bg-fill-3 sm:w-40"
-      >
-        {GROUPS.map((g) => (
-          <optgroup key={g} label={g}>
-            {FIELD_TYPES.filter((t) => t.group === g).map((t) => (
-              <option key={t.type} value={t.type}>
-                {t.label}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute top-1/2 right-3 size-3.5 -translate-y-1/2 text-fg-2" />
-    </div>
+    <Select
+      value={value}
+      groups={TYPE_GROUPS}
+      onChange={(v) => onChange(v as FieldType)}
+      aria-label="字段类型"
+      className={cn('w-full shrink-0 sm:w-40', className)}
+    />
   )
 }
 

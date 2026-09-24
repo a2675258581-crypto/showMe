@@ -65,16 +65,16 @@ export function NumberField({
         onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
         placeholder={placeholder}
         mono
+        autoGrow
         autoCapitalize="off"
         autoCorrect="off"
         aria-invalid={hasError}
         aria-label={typeof label === 'string' ? label : copyLabel.replace(/^复制/, '')}
         className={cn(
-          'py-2.5 text-[14px] leading-6 break-all transition-opacity',
+          'min-h-[46px] py-2.5 text-[14px] leading-6 break-all transition-opacity',
           hasError && 'border-danger focus:border-danger focus:ring-danger/15',
           stale && !active && 'opacity-50',
         )}
-        style={{ minHeight: 46, resize: 'none', fieldSizing: 'content' }}
       />
       {invalid && invalid.length > 0 && <InvalidMirror text={value} invalid={invalid} />}
     </div>

@@ -331,20 +331,19 @@ export function Generator({
             label="容错级别"
             hint={logo ? '放置 Logo 时自动使用 H 级容错' : `可恢复${ECL_INFO[ecl].recovery}的损坏`}
           >
-            {/* 有 Logo 时锁定为 H：inert 同时屏蔽鼠标与键盘，避免悄悄改掉保存的级别 */}
-            <div inert={!!logo} className={cn('transition-opacity', logo && 'opacity-50')}>
-              <SegmentedControl<Ecl>
-                block
-                value={ecl}
-                onChange={(v) => set('ecl', v)}
-                aria-label="容错级别"
-                options={ECLS.map((e) => ({
-                  value: e,
-                  label: e,
-                  title: `恢复${ECL_INFO[e].recovery}`,
-                }))}
-              />
-            </div>
+            {/* 有 Logo 时锁定为 H，禁用以免悄悄改掉保存的级别 */}
+            <SegmentedControl<Ecl>
+              block
+              value={ecl}
+              onChange={(v) => set('ecl', v)}
+              disabled={!!logo}
+              aria-label="容错级别"
+              options={ECLS.map((e) => ({
+                value: e,
+                label: e,
+                title: `恢复${ECL_INFO[e].recovery}`,
+              }))}
+            />
           </Field>
           <div className="flex flex-col gap-4">
             <Slider
