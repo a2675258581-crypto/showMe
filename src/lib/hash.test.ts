@@ -8,6 +8,7 @@ import {
   hashBytes,
   hashChunks,
   matchDigest,
+  md5Variants,
   parseExpectedDigest,
   type HashAlgoId,
   type HashDigests,
@@ -178,6 +179,18 @@ describe('formatDigest', () => {
     expect(digestsToText(d, 'hex', true)).toBe(
       'MD5: 900150983CD24FB0D6963F7D28E17F72\nSHA-1: A9993E364706816ABA3E25717850C26C9CD0D89D',
     )
+  })
+})
+
+describe('md5Variants', () => {
+  it('gives 32 / 16 位 in lower and upper case', async () => {
+    const d = await hashBytes(utf8Encode('abc'), ['md5'])
+    expect(md5Variants(d.md5!).map((v) => [v.label, v.value])).toEqual([
+      ['32 位小写', '900150983cd24fb0d6963f7d28e17f72'],
+      ['32 位大写', '900150983CD24FB0D6963F7D28E17F72'],
+      ['16 位小写', '3cd24fb0d6963f7d'],
+      ['16 位大写', '3CD24FB0D6963F7D'],
+    ])
   })
 })
 

@@ -181,6 +181,24 @@ export function formatDigest(bytes: Uint8Array, format: DigestFormat, upper = fa
   return format === 'hex' ? bytesToHex(bytes, upper) : bytesToBase64(bytes)
 }
 
+export interface Md5Variant {
+  id: 'md5-32-lower' | 'md5-32-upper' | 'md5-16-lower' | 'md5-16-upper'
+  label: string
+  value: string
+}
+
+/** 国内常见的四种 MD5 写法：32 / 16 位 × 小写 / 大写（固定 Hex，不受大小写开关影响） */
+export function md5Variants(md5: Uint8Array): Md5Variant[] {
+  const full = bytesToHex(md5)
+  const half = full.slice(8, 24)
+  return [
+    { id: 'md5-32-lower', label: '32 位小写', value: full },
+    { id: 'md5-32-upper', label: '32 位大写', value: full.toUpperCase() },
+    { id: 'md5-16-lower', label: '16 位小写', value: half },
+    { id: 'md5-16-upper', label: '16 位大写', value: half.toUpperCase() },
+  ]
+}
+
 // ───────────── 校验：粘贴期望值，找出匹配的算法 ─────────────
 
 export type MatchResult<T extends string = string> =

@@ -299,7 +299,7 @@ export const TOOLS: ToolDef[] = [
     id: 'hash',
     name: '哈希计算',
     description:
-      'MD5（含 16 位）、SHA-1/2/3、Keccak-256、SM3 国密、CRC32、xxHash64、BLAKE3，文本与大文件都能算，并可校验。',
+      'MD5（32 位 / 16 位、大小写）、SHA-1/2/3、Keccak-256、SM3 国密、CRC32、xxHash64、BLAKE3，文本与大文件都能算，并可校验。',
     category: 'crypto',
     keywords: [
       'md5',
@@ -322,6 +322,9 @@ export const TOOLS: ToolDef[] = [
       'blake3',
       'xxhash',
       'md5 16',
+      'md5 32',
+      '32位小写',
+      '32位大写',
       '校验',
     ],
     icon: Hash,

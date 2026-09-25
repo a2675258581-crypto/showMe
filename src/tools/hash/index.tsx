@@ -37,6 +37,7 @@ import {
 import { AlgoPicker } from './AlgoPicker'
 import { DigestList } from './DigestList'
 import { FileCard, type FileJob } from './FileCard'
+import { Md5Formats } from './Md5Formats'
 import { VerifyField } from './VerifyField'
 
 interface Options {
@@ -250,6 +251,7 @@ export default function HashTool() {
     }
   })
 
+  const resultPlaceholder = isText ? '输入内容后自动计算' : job ? '等待计算' : '选择文件后开始计算'
   const byteCount = 'bytes' in decoded ? decoded.bytes.length : null
   const encodingLabel = ENCODING_OPTIONS.find((e) => e.value === opts.encoding)?.label
 
@@ -459,12 +461,21 @@ export default function HashTool() {
         idle={!digests}
       />
 
+      {visibleIds.includes('md5') && (
+        <Md5Formats
+          md5={digests?.md5 ?? null}
+          pending={pending}
+          stale={stale}
+          placeholder={resultPlaceholder}
+        />
+      )}
+
       <DigestList
         items={items}
         matched={matched}
         pending={pending}
         stale={stale}
-        placeholder={isText ? '输入内容后自动计算' : job ? '等待计算' : '选择文件后开始计算'}
+        placeholder={resultPlaceholder}
       />
 
       <p className="px-1 text-xs leading-relaxed text-fg-3">
