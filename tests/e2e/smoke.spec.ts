@@ -48,6 +48,22 @@ test('⌘K / Ctrl+K 命令面板可跳转到工具', async ({ page }) => {
   await expect(page).toHaveURL(/\/t\/timestamp$/)
 })
 
+test('江湖页：七幕滚到底，全词与印章出现且无报错', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/jianghu')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('江湖')
+  await expect(page.getByText('一剑一囊风满袂')).toHaveCount(1)
+  // 一路滚到底，让每一幕都渲染、动画都跑一遍
+  for (let i = 0; i < 14; i++) {
+    await page.mouse.wheel(0, 1600)
+    await page.waitForTimeout(200)
+  }
+  await expect(page.getByText('一曲送残星。')).toBeVisible()
+  await expect(page.getByRole('img', { name: '印章：江湖客' })).toBeVisible()
+  await expect(page.getByRole('link', { name: '回百宝箱' })).toBeVisible()
+  expect(errors).toEqual([])
+})
+
 test('未知路由显示 404', async ({ page }) => {
   await page.goto('/definitely-not-here')
   await expect(page.getByText('404')).toBeVisible()

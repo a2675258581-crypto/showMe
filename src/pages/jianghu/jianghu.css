@@ -1,0 +1,274 @@
+/*
+ * 《临江仙 · 江湖》专用样式：水墨配色、字体与动画。
+ * 变量全部挂在 .jianghu 下，深色模式由 .dark .jianghu 覆盖，不污染全站 token。
+ * 字体是按页面用到的字子集化后的 woff2（见 scripts/subset-jianghu-fonts.sh），只在本页加载。
+ */
+@font-face {
+  font-family: 'Jianghu Kai';
+  src: url('./fonts/mashanzheng-jianghu.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Jianghu Song';
+  src: url('./fonts/notoserifsc-jianghu.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.jianghu {
+  /* 纸 */
+  --jh-paper: #ece3d1;
+  --jh-paper-2: #e3d8c3;
+  --jh-dusk: #cdb79b;
+  --jh-night: #12151b;
+  --jh-night-2: #171c25;
+  --jh-dawn: #d6dad9;
+
+  /* 墨：白天用 */
+  --jh-ink: #232326;
+  --jh-ink-2: #55555b;
+  --jh-ink-3: #8d8d93;
+  /* 夜里的字 */
+  --jh-ink-night: #e8e2d4;
+  --jh-ink-night-2: #aaa598;
+  --jh-ink-night-3: #6f6c64;
+
+  --jh-seal: #b4382d;
+  --jh-lamp: #e6b86b;
+  --jh-mist: #f5efe3;
+  --jh-water: #7a8a96;
+  --jh-leaf: #a8683a;
+  --jh-moon: #efe7cc;
+
+  --jh-font-kai:
+    'Jianghu Kai', 'Kaiti SC', 'STKaiti', 'KaiTi', '楷体', 'AR PL UKai CN', 'Noto Serif CJK SC',
+    'Source Han Serif SC', 'Songti SC', 'SimSun', serif;
+  --jh-font-song:
+    'Jianghu Song', 'Songti SC', 'STSong', 'SimSun', '宋体', 'Noto Serif CJK SC',
+    'Source Han Serif SC', 'Noto Serif SC', serif;
+
+  /* 幕内文字色：由 jh-tone-* 按昼夜切换 */
+  --jh-fg: var(--jh-ink);
+  --jh-fg-2: var(--jh-ink-2);
+  --jh-fg-3: var(--jh-ink-3);
+}
+
+.dark .jianghu {
+  --jh-paper: #1b1917;
+  --jh-paper-2: #201d1a;
+  --jh-dusk: #2b2320;
+  --jh-night: #0e1116;
+  --jh-night-2: #121620;
+  --jh-dawn: #1f242b;
+
+  --jh-ink: #e6dfd0;
+  --jh-ink-2: #aea797;
+  --jh-ink-3: #7a7468;
+
+  --jh-seal: #c4463a;
+  --jh-mist: #2a2622;
+  --jh-water: #566572;
+  --jh-leaf: #9a5f36;
+}
+
+.jianghu .jh-tone-day,
+.jianghu .jh-tone-dusk,
+.jianghu .jh-tone-dawn,
+.jianghu.jh-tone-day,
+.jianghu.jh-tone-dusk,
+.jianghu.jh-tone-dawn {
+  --jh-fg: var(--jh-ink);
+  --jh-fg-2: var(--jh-ink-2);
+  --jh-fg-3: var(--jh-ink-3);
+  color: var(--jh-fg);
+}
+.jianghu .jh-tone-night,
+.jianghu.jh-tone-night {
+  --jh-fg: var(--jh-ink-night);
+  --jh-fg-2: var(--jh-ink-night-2);
+  --jh-fg-3: var(--jh-ink-night-3);
+  color: var(--jh-fg);
+}
+
+.jh-kai {
+  font-family: var(--jh-font-kai);
+}
+.jh-song {
+  font-family: var(--jh-font-song);
+}
+/* 竖排：从右往左一列一列 */
+.jh-vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+.jh-upright {
+  text-orientation: upright;
+}
+.jh-verse {
+  line-height: 1.85;
+  letter-spacing: 0.14em;
+}
+
+/* 宣纸颗粒 */
+.jh-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ───────── 动画（全站的 prefers-reduced-motion 规则会把它们缩到 0） ───────── */
+@keyframes jh-mist {
+  from {
+    transform: translate3d(-4%, 0, 0);
+  }
+  to {
+    transform: translate3d(4%, 0, 0);
+  }
+}
+@keyframes jh-birds {
+  from {
+    transform: translate3d(-15vw, 0, 0);
+  }
+  to {
+    transform: translate3d(115vw, -8vh, 0);
+  }
+}
+@keyframes jh-flutter {
+  from {
+    transform: skewX(0deg);
+  }
+  to {
+    transform: skewX(-7deg);
+  }
+}
+@keyframes jh-leaf-fall {
+  0% {
+    transform: translate3d(0, -12vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(14vw, 108vh, 0) rotate(320deg);
+    opacity: 0;
+  }
+}
+@keyframes jh-leaf-sway {
+  from {
+    transform: translateX(-18px) rotate(-12deg);
+  }
+  to {
+    transform: translateX(18px) rotate(12deg);
+  }
+}
+@keyframes jh-sway {
+  from {
+    transform: rotate(-2.5deg);
+  }
+  to {
+    transform: rotate(2.5deg);
+  }
+}
+@keyframes jh-flow {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@keyframes jh-flicker {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  23% {
+    opacity: 0.86;
+    transform: scale(0.985);
+  }
+  41% {
+    opacity: 0.95;
+  }
+  67% {
+    opacity: 0.8;
+    transform: scale(1.012);
+  }
+  84% {
+    opacity: 0.93;
+  }
+}
+@keyframes jh-twinkle {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes jh-rain {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -48px 360px;
+  }
+}
+@keyframes jh-flag {
+  from {
+    transform: rotate(-1.5deg) skewX(-3deg);
+  }
+  to {
+    transform: rotate(1.5deg) skewX(3deg);
+  }
+}
+@keyframes jh-drip {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(160px);
+    opacity: 0;
+  }
+}
+@keyframes jh-rise {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(16px, -120px, 0) scale(1);
+    opacity: 0;
+  }
+}
+@keyframes jh-hint {
+  0% {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  45% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  55% {
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+}
