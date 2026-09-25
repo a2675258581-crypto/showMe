@@ -27,7 +27,7 @@ export function Finale({
         <ChapterMark
           chapter={FINALE.chapter}
           name={FINALE.name}
-          className="absolute top-16 left-4 sm:left-8"
+          className="absolute top-[25svh] left-4 sm:left-8"
         />
 
         <HangingScroll />
