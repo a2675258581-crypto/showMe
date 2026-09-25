@@ -8,6 +8,7 @@
 - `npm run dev` 开发服务器（含 `/__proxy` 本地代理）
 - `npm run typecheck` / `npm run lint` / `npm test`（vitest，覆盖 `src/lib` 与 `server`）
 - `npm run build && npm run preview` 生产构建预览（同样带 `/__proxy`）
+- `npm run build:static` 纯静态版（`dist-static/`，相对路径 + `#/` 路由 + ASCII 输出，读取 `.env.static`），用于静态托管或在线预览
 - `npm run e2e` Playwright 冒烟测试（Chromium 在 `/opt/pw-browsers`，不要 `playwright install`）
 - 临时的浏览器验证脚本与截图放 `.verify/`（已 gitignore，lint/prettier 也忽略）；并行起多个 dev server 时用 `VITE_CACHE_DIR=node_modules/.vite-xxx` 隔离依赖缓存
 

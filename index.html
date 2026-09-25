@@ -12,7 +12,9 @@
       // 在首帧前应用主题，避免闪烁
       try {
         var t = localStorage.getItem('theme.v1') || 'system';
-        var dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+        var host = document.documentElement.getAttribute('data-theme');
+        var sys = host === 'dark' || host === 'light' ? host === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+        var dark = t === 'dark' || (t === 'system' && sys);
         document.documentElement.classList.toggle('dark', dark);
       } catch (e) {}
     </script>

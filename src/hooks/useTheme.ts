@@ -6,15 +6,32 @@ export type ThemePref = 'system' | 'light' | 'dark'
 const media =
   typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)') : null
 
+/**
+ * 嵌在别的页面里（如 Artifact 预览）时，宿主会在 <html> 上标 data-theme="dark|light"，
+ * 「跟随系统」优先听它的；没有标记时看系统的 prefers-color-scheme。
+ */
+function hostTheme(): 'dark' | 'light' | null {
+  const t = document.documentElement.getAttribute('data-theme')
+  return t === 'dark' || t === 'light' ? t : null
+}
+
 function subscribeSystem(cb: () => void) {
   media?.addEventListener('change', cb)
-  return () => media?.removeEventListener('change', cb)
+  const mo = new MutationObserver(cb)
+  mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+  return () => {
+    media?.removeEventListener('change', cb)
+    mo.disconnect()
+  }
 }
 
 export function useSystemDark() {
   return useSyncExternalStore(
     subscribeSystem,
-    () => !!media?.matches,
+    () => {
+      const host = hostTheme()
+      return host ? host === 'dark' : !!media?.matches
+    },
     () => false,
   )
 }

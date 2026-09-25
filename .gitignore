@@ -9,3 +9,4 @@ playwright-report
 .vite
 *.tsbuildinfo
 .verify
+dist-static

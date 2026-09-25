@@ -119,6 +119,8 @@ npm run dev          # http://localhost:5173
 
 `npm run build` 产物是纯静态站点，可以放到任意静态托管（Vercel、Cloudflare Pages、GitHub Pages、Nginx）。注意：
 
+- 没法配置「所有路径回退到 index.html」的托管（如 GitHub Pages、直接打开的静态目录）用 `npm run build:static`：产物在 `dist-static/`，资源用相对路径、路由用 `#/`，放到任何子目录下都能直接打开。
+
 - 这是 SPA，需要把所有路径回退到 `index.html`。
 - 静态托管上没有 `/__proxy`，「API 调试」会自动改用浏览器直连（仅能请求允许跨域的接口），除非另外部署代理函数。
 
