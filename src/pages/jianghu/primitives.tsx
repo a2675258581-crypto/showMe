@@ -153,10 +153,11 @@ interface VerseProps {
   /** 首字延迟（秒） */
   delay?: number
   className?: string
+  style?: CSSProperties
 }
 
 /** 竖排词句：进入视口后逐字浮现，像毛笔一笔一笔写出来 */
-export function VerticalVerse({ lines, size = 'lg', delay = 0, className }: VerseProps) {
+export function VerticalVerse({ lines, size = 'lg', delay = 0, className, style }: VerseProps) {
   let i = 0
   return (
     <motion.div
@@ -164,6 +165,7 @@ export function VerticalVerse({ lines, size = 'lg', delay = 0, className }: Vers
       whileInView="show"
       viewport={{ once: true, amount: 0.4 }}
       className={cn('jh-kai jh-vertical jh-verse', VERSE_SIZE[size], className)}
+      style={style}
     >
       {lines.map((line) => (
         <p key={line}>
