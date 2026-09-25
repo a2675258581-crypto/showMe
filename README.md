@@ -86,7 +86,7 @@
 
 ## 本地运行
 
-需要 Node.js 20+。
+需要 Node.js 20.19+ 或 22.12+（推荐 22 LTS，见 `.nvmrc`）。用 `node -v` 确认版本，版本太旧时 `npm run dev` 会报 `Unexpected token` 之类的语法错误。
 
 ```bash
 npm install
