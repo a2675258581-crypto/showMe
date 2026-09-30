@@ -104,12 +104,12 @@ function TopBar() {
     <header className="fixed inset-x-0 top-0 z-40 flex h-12 items-center justify-between px-3 mix-blend-difference sm:px-5">
       <Link
         to="/"
-        className="flex items-center gap-0.5 rounded-full py-1 pr-3 pl-1.5 font-sans text-[13px] font-medium tracking-tight text-white opacity-75 transition-opacity duration-300 hover:opacity-100"
+        className="flex items-center gap-0.5 rounded-full py-1 pr-3 pl-1.5 font-sans text-[13px] font-medium tracking-tight text-white opacity-90 transition-opacity duration-300 hover:opacity-100"
       >
         <ChevronLeft className="size-4" />
         showMe
       </Link>
-      <div className="opacity-75 transition-opacity duration-300 hover:opacity-100 [&>button]:text-white [&>button:hover]:bg-transparent [&>button:hover]:text-white">
+      <div className="opacity-90 transition-opacity duration-300 hover:opacity-100 [&>button]:text-white [&>button:hover]:bg-transparent [&>button:hover]:text-white">
         <ThemeToggle />
       </div>
     </header>
