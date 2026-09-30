@@ -92,7 +92,9 @@ const DRIPS = [
 })
 
 /* ───────── 雨：斜向的重复渐变做雨丝，再用一层细缝遮罩把长线切成短划，随 jh-rain 往下落 ─────────
- * 雨丝方向与 jh-rain 的位移 (-48px, 360px) 平行（187.6°），周期整除位移长度 363.19px，循环时无缝。 */
+ * jh-rain 每个周期把背景挪 (-48px, 360px)，雨丝要顺着这段位移的方向，短划才会沿着自己的轨迹往下滑。
+ * 两层角度略有不同（187.6° 与 184°），细缝间距也不同，交叠起来就不再是一张整齐的网；
+ * 渐变周期取位移在各自方向上的投影（363.19px / 362.47px）的整分之一，循环时无缝。 */
 const RAIN_LAYERS = [
   {
     streak:
@@ -103,17 +105,27 @@ const RAIN_LAYERS = [
   },
   {
     streak:
-      'repeating-linear-gradient(187.6deg, transparent 0 62px, var(--jh-water) 65px 86px, transparent 90.8px)',
-    mask: 'repeating-linear-gradient(97.6deg, transparent 0 11px, black 11px 12.2px, transparent 12.2px 23px)',
+      'repeating-linear-gradient(184deg, transparent 0 60px, var(--jh-water) 63px 82px, transparent 90.62px)',
+    mask: 'repeating-linear-gradient(94deg, transparent 0 13px, black 13px 14.2px, transparent 14.2px 27px)',
     duration: '1.15s',
     opacity: 0.6,
   },
 ]
+/** 雨的疏密：一张低频噪声当遮罩，把整齐的雨柱切成一阵一阵的，像风里的雨 */
+const RAIN_GUST_MASK = `url("data:image/svg+xml,${encodeURIComponent(
+  "<svg xmlns='http://www.w3.org/2000/svg' width='720' height='720'>" +
+    "<filter id='n' x='0' y='0' width='100%' height='100%'>" +
+    "<feTurbulence type='fractalNoise' baseFrequency='0.011 0.004' numOctaves='2' seed='11' stitchTiles='stitch'/>" +
+    "<feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 5 -1.6'/>" +
+    '</filter>' +
+    "<rect width='720' height='720' filter='url(#n)'/>" +
+    '</svg>',
+)}")`
 
-/** 阴云：三团大墨晕压在天顶，雨停后慢慢散开 */
+/** 阴云：三团大墨晕压在天顶，雨停后慢慢散开；第一团往右挪开一点，别压在幕次标记上 */
 const CLOUDS = [
   {
-    className: '-top-[30%] -left-[10%] h-[70%] w-[70%]',
+    className: '-top-[30%] left-[4%] h-[70%] w-[64%]',
     opacity: 0.14,
     duration: '46s',
     delay: '0s',
@@ -138,23 +150,56 @@ const SHAFTS = [
   '-top-[10%] right-[8%] h-[110%] w-[5vw] rotate-[24deg]',
 ]
 
-/** 水洼：三个横躺的椭圆 */
-const PUDDLES = [
-  { className: 'bottom-[20%] left-[8%] h-[1.3vh] w-[24vw] sm:left-[12%]', opacity: 0.28 },
-  { className: 'bottom-[24%] left-[42%] h-[0.9vh] w-[12vw]', opacity: 0.2 },
-  { className: 'bottom-[15%] left-[56%] h-[1.7vh] w-[28vw]', opacity: 0.32 },
-]
-/** 雨点落在水洼上的涟漪 */
-const RIPPLES = [
+/** 水洼的形状（viewBox 300×60）：fill 是一整块水面，line 是同一圈轮廓，干笔勾边、断成两截 */
+const POOL_SHAPES = [
   {
-    className: 'bottom-[20.4%] left-[14%] h-[1.2vh] w-[3.2vw] sm:left-[17%]',
-    duration: 1.8,
-    delay: 0,
+    fill: 'M18 30 C40 14 110 8 175 10 C235 12 292 18 288 32 C284 46 220 54 150 52 C80 50 24 46 18 30 Z',
+    line: 'M22 37 C17 29 24 21 40 18 C92 11 152 8 212 11 M66 50 C124 55 204 54 262 45 C278 41 288 36 289 30',
   },
-  { className: 'bottom-[20.2%] left-[24%] h-[1vh] w-[2.6vw]', duration: 2.1, delay: 0.9 },
-  { className: 'bottom-[24.2%] left-[46%] h-[0.8vh] w-[2.2vw]', duration: 1.6, delay: 0.4 },
-  { className: 'bottom-[15.6%] left-[66%] h-[1.5vh] w-[4vw]', duration: 2.3, delay: 1.3 },
-  { className: 'bottom-[15.3%] left-[76%] h-[1.2vh] w-[3vw]', duration: 1.9, delay: 0.6 },
+  {
+    fill: 'M30 28 C60 16 130 12 190 14 C250 16 280 22 276 32 C270 44 200 48 140 46 C80 44 36 40 30 28 Z',
+    line: 'M70 17 C120 12 170 12 224 15 C252 17 274 22 276 30 M226 44 C190 48 120 47 66 42 C48 40 34 36 32 30',
+  },
+  {
+    fill: 'M12 34 C30 18 90 10 160 8 C230 6 296 14 290 30 C286 44 230 56 150 55 C70 54 18 48 12 34 Z',
+    line: 'M14 40 C10 33 18 25 34 20 C90 11 150 8 216 9 M256 12 C274 15 290 20 290 30 C286 44 230 56 150 55 C120 54.6 98 54 80 52',
+  },
+]
+
+interface PuddleDef {
+  shape: number
+  className: string
+  /** 涟漪：位置与宽度都是水洼盒子的百分比 */
+  ripples: { x: number; y: number; w: number; duration: number; delay: number }[]
+  /** 酒旗的倒影只落在檐下这一洼 */
+  reflection?: boolean
+}
+
+/** 三洼水：檐下一洼最近，映着酒旗（横坐标按断点跟着旗子走）；远处一小洼；右边一大洼 */
+const PUDDLES: PuddleDef[] = [
+  {
+    shape: 0,
+    className:
+      'bottom-[19%] left-[30vw] h-[3.2vh] w-[38vw] sm:left-[15vw] sm:w-[30vw] lg:left-[10.5vw] lg:w-[26vw]',
+    reflection: true,
+    ripples: [
+      { x: 28, y: 44, w: 13, duration: 1.8, delay: 0 },
+      { x: 62, y: 32, w: 10, duration: 2.1, delay: 0.9 },
+    ],
+  },
+  {
+    shape: 1,
+    className: 'bottom-[22.6%] left-[4vw] h-[1.8vh] w-[18vw] sm:left-[44vw] sm:w-[13vw]',
+    ripples: [{ x: 50, y: 46, w: 20, duration: 1.6, delay: 0.4 }],
+  },
+  {
+    shape: 2,
+    className: 'bottom-[14.5%] left-[62vw] h-[3.8vh] w-[30vw] sm:left-[57vw] sm:w-[29vw]',
+    ripples: [
+      { x: 30, y: 50, w: 12, duration: 2.3, delay: 1.3 },
+      { x: 68, y: 36, w: 9, duration: 1.9, delay: 0.6 },
+    ],
+  },
 ]
 
 /** 第二幕 · 雨初晴：檐角下斜挂着酒旗，雨丝随滚动渐渐停住，云散开，一点金光从右上角漏下来，水洼跟着亮起 */
@@ -183,7 +228,9 @@ function Stage({ progress, scene }: { progress: MotionValue<number>; scene: Scen
   const overcast = useTransform(progress, [0, 0.1, 0.8, 1], [1, 1, 0.2, 0.2])
   const bloom = useTransform(progress, [0, 0.45, 0.9, 1], [0, 0, 0.55, 0.55])
   const shaft = useTransform(progress, [0, 0.5, 0.95, 1], [0, 0, 0.42, 0.42])
-  const sheen = useTransform(progress, [0, 0.45, 0.9, 1], [0, 0, 0.6, 0.6])
+  const sheen = useTransform(progress, [0, 0.45, 0.9, 1], [0, 0, 0.55, 0.55])
+  // 雨打着的时候水面碎，倒影淡；雨停了水面平下来，倒影才清楚一点
+  const reflect = useTransform(progress, [0, 0.35, 0.8, 1], [0.1, 0.1, 0.18, 0.18])
   const roofY = useTransform(progress, [0, 1], [0, -28])
   const groundY = useTransform(progress, [0, 1], [0, 12])
 
@@ -226,11 +273,19 @@ function Stage({ progress, scene }: { progress: MotionValue<number>; scene: Scen
       </div>
 
       {/* 镇口的路、远坡与水洼 */}
-      <motion.div aria-hidden style={{ y: groundY }} className="absolute inset-0">
+      <motion.div aria-hidden style={{ y: groundY }} className="absolute inset-0 text-(--jh-ink)">
+        {/* 路面上淡淡一层湿气，好让水洼的天光显出来 */}
+        <div
+          className="absolute inset-x-0 top-[75%] h-[16%]"
+          style={{
+            background:
+              'linear-gradient(to bottom, color-mix(in srgb, currentColor 4%, transparent), transparent)',
+          }}
+        />
         <svg
           viewBox="0 0 1440 160"
           preserveAspectRatio="none"
-          className="absolute inset-x-0 top-[68%] h-[11%] w-full text-(--jh-ink)"
+          className="absolute inset-x-0 top-[68%] h-[11%] w-full"
           style={{ filter: 'url(#jh-ink-rough)' }}
         >
           <defs>
@@ -238,22 +293,55 @@ function Stage({ progress, scene }: { progress: MotionValue<number>; scene: Scen
               <stop offset="0" stopColor="currentColor" stopOpacity="0.11" />
               <stop offset="1" stopColor="currentColor" stopOpacity="0" />
             </linearGradient>
+            {/* 路的一笔：起笔重、收笔轻，不画到纸边 */}
+            <linearGradient id="jh-rain-road" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stopColor="currentColor" stopOpacity="0" />
+              <stop offset="0.06" stopColor="currentColor" stopOpacity="0.7" />
+              <stop offset="0.34" stopColor="currentColor" stopOpacity="0.92" />
+              <stop offset="0.7" stopColor="currentColor" stopOpacity="0.62" />
+              <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+            </linearGradient>
+            {/* 水洼共用的几层：映天光的淡晕、近岸的一点水色、雨后的暖光、酒旗的倒影 */}
+            <linearGradient id="jh-rain-pool" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="var(--jh-mist)" stopOpacity="0.85" />
+              <stop offset="1" stopColor="var(--jh-mist)" stopOpacity="0.3" />
+            </linearGradient>
+            <linearGradient id="jh-rain-pool-near" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0.45" stopColor="var(--jh-water)" stopOpacity="0" />
+              <stop offset="1" stopColor="var(--jh-water)" stopOpacity="0.16" />
+            </linearGradient>
+            <radialGradient id="jh-rain-pool-sheen" cx="0.66" cy="0.35" r="0.6">
+              <stop offset="0" stopColor="var(--jh-lamp)" stopOpacity="0.75" />
+              <stop offset="1" stopColor="var(--jh-lamp)" stopOpacity="0" />
+            </radialGradient>
+            {/* 倒影：从远岸正中往下、往两边都散开，没有硬边（矩形比渐变宽，边上正好淡到零） */}
+            <radialGradient
+              id="jh-rain-pool-reflect"
+              cx="0.5"
+              cy="0.06"
+              r="0.5"
+              gradientTransform="translate(0.5 0.06) scale(1 1.8) translate(-0.5 -0.06)"
+            >
+              <stop offset="0" stopColor="currentColor" stopOpacity="1" />
+              <stop offset="0.45" stopColor="currentColor" stopOpacity="0.7" />
+              <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+            </radialGradient>
           </defs>
           <path
             d="M600 126 C800 76 1000 60 1170 82 C1290 98 1380 104 1460 96 L1460 160 L600 160 Z"
             fill="url(#jh-rain-hill)"
           />
-          <g
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            vectorEffect="non-scaling-stroke"
-          >
-            <path
-              d="M-10 108 C220 96 440 118 660 106 C880 94 1120 114 1460 100"
-              strokeWidth="2"
-              opacity="0.5"
+          <g fill="none" stroke="currentColor" strokeLinecap="round">
+            <motion.path
+              d="M144 108 C340 98 520 116 700 106 C880 96 1060 112 1224 102"
+              stroke="url(#jh-rain-road)"
+              strokeWidth="2.2"
+              opacity="0.55"
               vectorEffect="non-scaling-stroke"
+              initial={{ pathLength: 0 }}
+              whileInView={{ pathLength: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.8, delay: 0.2, ease: EASE }}
             />
             {/* 路边两丛短草 */}
             <path
@@ -271,39 +359,29 @@ function Stage({ progress, scene }: { progress: MotionValue<number>; scene: Scen
           </g>
         </svg>
         {PUDDLES.map((p, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 1.4, delay: 0.6 + i * 0.2, ease: EASE }}
-            className={cn('absolute', p.className)}
-          >
-            <span
-              className="absolute inset-0 rounded-[50%] bg-(--jh-water) blur-[1.5px]"
-              style={{ opacity: p.opacity }}
-            />
-            <motion.span
-              style={{ opacity: sheen }}
-              className="absolute inset-x-[16%] inset-y-[14%] rounded-[50%] bg-(--jh-lamp) blur-[2px]"
-            />
-          </motion.div>
+          <Puddle key={i} def={p} index={i} wet={wet} sheen={sheen} reflect={reflect} />
         ))}
-        <motion.div style={{ opacity: wet }} className="absolute inset-0">
-          {RIPPLES.map((r, i) => (
-            <motion.span
-              key={i}
-              className={cn('absolute rounded-[50%] border border-(--jh-water)', r.className)}
-              animate={{ scale: [0.2, 1.4], opacity: [0.7, 0] }}
-              transition={{
-                duration: r.duration,
-                delay: r.delay,
-                repeat: Infinity,
-                ease: 'easeOut',
-              }}
-            />
-          ))}
-        </motion.div>
+      </motion.div>
+
+      {/* 雨：两层雨丝，近的快而粗，远的慢而细；画在檐角之下，雨丝不打在屋面和酒旗上 */}
+      <motion.div
+        aria-hidden
+        style={{ opacity: rain, maskImage: RAIN_GUST_MASK, WebkitMaskImage: RAIN_GUST_MASK }}
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+      >
+        {RAIN_LAYERS.map((l, i) => (
+          <div
+            key={i}
+            className="absolute -inset-x-16 -top-[400px] bottom-0"
+            style={{
+              backgroundImage: l.streak,
+              maskImage: l.mask,
+              WebkitMaskImage: l.mask,
+              opacity: l.opacity,
+              animation: `jh-rain ${l.duration} linear infinite`,
+            }}
+          />
+        ))}
       </motion.div>
 
       {/* 酒家的檐角与斜挂的酒旗 */}
@@ -324,32 +402,11 @@ function Stage({ progress, scene }: { progress: MotionValue<number>; scene: Scen
         <Banner wet={wet} />
       </motion.div>
 
-      {/* 雨：两层雨丝，近的快而粗，远的慢而细 */}
-      <motion.div
-        aria-hidden
-        style={{ opacity: rain }}
-        className="pointer-events-none absolute inset-0 overflow-hidden"
-      >
-        {RAIN_LAYERS.map((l, i) => (
-          <div
-            key={i}
-            className="absolute -inset-x-16 -top-[400px] bottom-0"
-            style={{
-              backgroundImage: l.streak,
-              maskImage: l.mask,
-              WebkitMaskImage: l.mask,
-              opacity: l.opacity,
-              animation: `jh-rain ${l.duration} linear infinite`,
-            }}
-          />
-        ))}
-      </motion.div>
-
       {/* 文案 */}
       <ChapterMark
         chapter={scene.chapter}
         name={scene.name}
-        className="absolute top-16 left-4 z-10 sm:left-8"
+        className="absolute top-16 left-4 z-10 text-(--jh-fg-2) sm:left-8"
       />
       <div className="absolute inset-y-0 right-[8%] z-10 flex items-center sm:right-[12%] lg:right-[16%]">
         <VerticalVerse lines={scene.verses} />
@@ -358,6 +415,95 @@ function Stage({ progress, scene }: { progress: MotionValue<number>; scene: Scen
         {scene.narration}
       </Narration>
     </div>
+  )
+}
+
+/** 一洼水：淡墨晕出水面，干笔勾一圈断开的轮廓；檐下那一洼里还有酒旗斜斜的倒影。雨点的涟漪随雨停一起消失 */
+function Puddle({
+  def,
+  index,
+  wet,
+  sheen,
+  reflect,
+}: {
+  def: PuddleDef
+  index: number
+  wet: MotionValue<number>
+  sheen: MotionValue<number>
+  reflect: MotionValue<number>
+}) {
+  const shape = POOL_SHAPES[def.shape]
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ duration: 1.4, delay: 0.6 + index * 0.2, ease: EASE }}
+      className={cn('absolute', def.className)}
+    >
+      <svg
+        viewBox="0 0 300 60"
+        preserveAspectRatio="none"
+        className="absolute inset-0 h-full w-full overflow-visible text-(--jh-ink)"
+      >
+        {def.reflection && (
+          <defs>
+            <clipPath id="jh-rain-pool-clip">
+              <path d={shape.fill} />
+            </clipPath>
+          </defs>
+        )}
+        {/* 水面：映着天光的一块淡晕，近岸压一点水色 */}
+        <path d={shape.fill} fill="url(#jh-rain-pool)" />
+        <path d={shape.fill} fill="url(#jh-rain-pool-near)" />
+        {/* 酒旗的倒影：一道略斜的墨痕，只落在水里，越往近处越散 */}
+        {def.reflection && (
+          <motion.g clipPath="url(#jh-rain-pool-clip)" style={{ opacity: reflect }}>
+            <rect
+              x="80"
+              y="0"
+              width="140"
+              height="60"
+              transform="skewX(-5)"
+              fill="url(#jh-rain-pool-reflect)"
+            />
+          </motion.g>
+        )}
+        {/* 雨停后光从右上角漏下来，水面跟着泛一点暖色 */}
+        <g className="dark:opacity-60">
+          <motion.path d={shape.fill} fill="url(#jh-rain-pool-sheen)" style={{ opacity: sheen }} />
+        </g>
+        {/* 轮廓：一笔淡墨，断成两截 */}
+        <path
+          d={shape.line}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          opacity="0.35"
+          vectorEffect="non-scaling-stroke"
+          style={{ filter: 'url(#jh-ink)' }}
+        />
+      </svg>
+      <motion.div style={{ opacity: wet }} className="absolute inset-0">
+        {def.ripples.map((r, i) => (
+          <motion.span
+            key={i}
+            className="absolute rounded-[50%] border border-(--jh-water)"
+            style={{
+              left: `${r.x}%`,
+              top: `${r.y}%`,
+              width: `${r.w}%`,
+              height: '48%',
+              x: '-50%',
+              y: '-50%',
+            }}
+            animate={{ scale: [0.2, 1.4], opacity: [0.7, 0] }}
+            transition={{ duration: r.duration, delay: r.delay, repeat: Infinity, ease: 'easeOut' }}
+          />
+        ))}
+      </motion.div>
+    </motion.div>
   )
 }
 
@@ -388,9 +534,11 @@ function Eave({ wet }: { wet: MotionValue<number> }) {
       <g style={{ filter: 'url(#jh-ink-rough)' }}>
         {/* 墙面淡淡一层 */}
         <path d="M0 302 H140 V600 H0 Z" fill="url(#jh-rain-wall)" />
-        {/* 屋面：竖向一层浓淡，再横向压一层，靠檐角处留得更淡 */}
-        <path d={ROOF_PATH} fill="url(#jh-rain-roof)" />
-        <path d={ROOF_PATH} fill="url(#jh-rain-roof-x)" />
+        {/* 屋面：竖向一层浓淡，再横向压一层，靠檐角处留得更淡；深色纸上墨是浅的，这一大块压暗些，免得成了一块白粉 */}
+        <g className="dark:opacity-70">
+          <path d={ROOF_PATH} fill="url(#jh-rain-roof)" />
+          <path d={ROOF_PATH} fill="url(#jh-rain-roof-x)" />
+        </g>
         {/* 瓦垄 */}
         <g stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" opacity="0.5">
           {TILE_ROWS.map((l, i) => (
