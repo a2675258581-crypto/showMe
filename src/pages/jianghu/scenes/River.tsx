@@ -1,6 +1,7 @@
+import { Fragment } from 'react'
 import { motion, useReducedMotion, useTransform, type MotionValue } from 'motion/react'
 import { cn } from '@/lib/cn'
-import { seededSequence } from '@/lib/seeded-random'
+import { seededRandom, seededSequence } from '@/lib/seeded-random'
 import type { SceneDef } from '../poem'
 import {
   ChapterMark,
@@ -17,94 +18,144 @@ const HORIZON = 46
 /* ───────────── 水纹 ───────────── */
 
 /**
- * 水纹画布：宽 2880 = 两个视口宽，前后两半完全相同，
+ * 水纹画布：宽 2880 = 两个视口宽。笔画只画在前一半，后一半用 <use> 原样复制一遍，
  * 容器用 jh-flow 平移一半（reverse：向右，顺流）就能无缝循环。
  */
 const FLOW_W = 2880
+const FLOW_HALF = FLOW_W / 2
 const FLOW_H = 120
+/** 取样步长（画布单位） */
+const STEP = 12
+
+type Pt = [number, number]
 
 interface Wave {
-  /** 在江面里的高度（%） */
+  /** 在江面里的高度（%）：故意不等距，六道线才不会排成花纹 */
   top: number
-  /** 振幅（画布单位） */
+  /** 笔肚最粗处（画布单位，桌面上 ≈ px） */
+  weight: number
+  /** 起伏幅度上限 */
   amp: number
-  /** 波长，必须整除 1440，两半才接得上 */
-  period: number
-  /** 起笔相位，避免六道线同起同落 */
-  phase: number
-  width: number
   opacity: number
   /** 一个循环的秒数：远处慢、近处快，就有了层次 */
   duration: number
-  /** 虚线节奏：pathLength 归一化后每个波长 = 100，总和须整除半幅长度，循环时才无缝 */
-  dash: string
+  /** 近处的水纹旁边会跟一根细毛（副笔），远处不跟 */
+  hair: boolean
+  seed: number
 }
 
-/** 六道水纹：由远到近，振幅渐大、墨色渐浓、流得渐快 */
+/** 六道水纹：由远到近，笔越粗、墨越浓、流得越快。最近一道停在 71%，江面下缘留白给旁白与岸 */
 const WAVES: Wave[] = [
-  { top: 8, amp: 5, period: 240, phase: 40, width: 1.3, opacity: 0.3, duration: 46, dash: '64 36' },
-  {
-    top: 19,
-    amp: 9,
-    period: 360,
-    phase: 150,
-    width: 1.6,
-    opacity: 0.38,
-    duration: 39,
-    dash: '78 22 56 44',
-  },
-  {
-    top: 32,
-    amp: 14,
-    period: 360,
-    phase: 260,
-    width: 1.95,
-    opacity: 0.46,
-    duration: 33,
-    dash: '110 30 40 20',
-  },
-  {
-    top: 47,
-    amp: 20,
-    period: 480,
-    phase: 90,
-    width: 2.3,
-    opacity: 0.54,
-    duration: 27,
-    dash: '70 30',
-  },
-  {
-    top: 64,
-    amp: 27,
-    period: 720,
-    phase: 300,
-    width: 2.75,
-    opacity: 0.62,
-    duration: 22,
-    dash: '130 40 20 10',
-  },
-  {
-    top: 83,
-    amp: 34,
-    period: 720,
-    phase: 120,
-    width: 3.2,
-    opacity: 0.7,
-    duration: 18,
-    dash: '150 50',
-  },
+  { top: 5, weight: 1.2, amp: 3, opacity: 0.28, duration: 46, hair: false, seed: 31 },
+  { top: 11, weight: 1.6, amp: 5, opacity: 0.36, duration: 39, hair: false, seed: 47 },
+  { top: 22, weight: 2.2, amp: 8, opacity: 0.44, duration: 33, hair: true, seed: 59 },
+  { top: 38, weight: 3, amp: 12, opacity: 0.52, duration: 27, hair: true, seed: 73 },
+  { top: 52, weight: 3.9, amp: 16, opacity: 0.6, duration: 22, hair: true, seed: 89 },
+  { top: 71, weight: 5, amp: 21, opacity: 0.68, duration: 18, hair: true, seed: 107 },
 ]
 
-/** 用 Q + T 画一条正弦水纹：提前一个波长起笔、超出画布一个波长收笔，画布里任何一段都是完整周期 */
-function wavePath(w: Wave) {
-  const mid = FLOW_H / 2
-  const half = w.period / 2
-  const x0 = w.phase - w.period
-  const cycles = FLOW_W / w.period + 2
-  let d = `M${x0} ${mid} Q${x0 + w.period / 4} ${mid - w.amp} ${x0 + half} ${mid}`
-  for (let k = 2; k <= cycles * 2; k++) d += ` T${x0 + half * k} ${mid}`
-  return { d, length: cycles * 100 }
+const f = (n: number) => n.toFixed(1)
+
+/** 把折线用中点二次曲线连起来，笔画才圆润 */
+function chain(pts: Pt[]) {
+  let d = ''
+  for (let i = 1; i < pts.length - 1; i++) {
+    const [x, y] = pts[i]
+    const [nx, ny] = pts[i + 1]
+    d += ` Q${f(x)} ${f(y)} ${f((x + nx) / 2)} ${f((y + ny) / 2)}`
+  }
+  const [lx, ly] = pts[pts.length - 1]
+  return `${d} L${f(lx)} ${f(ly)}`
 }
+
+/** 笔压：露锋起笔，很快铺开，然后慢慢提起，尾巴拖得长 */
+function press(t: number) {
+  return Math.sin(Math.PI * Math.pow(t, 0.72)) ** 0.85
+}
+
+/** 一笔：沿中线 centre(x) 走一条两头尖的实心带子，粗细按笔压变化 */
+function ribbon(from: number, to: number, centre: (x: number) => number, weight: number) {
+  const n = Math.max(8, Math.round((to - from) / STEP))
+  const top: Pt[] = []
+  const bottom: Pt[] = []
+  for (let i = 0; i <= n; i++) {
+    const t = i / n
+    const x = from + (to - from) * t
+    const y = centre(x)
+    const half = (weight * press(t)) / 2
+    top.push([x, y - half])
+    bottom.push([x, y + half])
+  }
+  bottom.reverse()
+  return `M${f(top[0][0])} ${f(top[0][1])}${chain(top)}${chain(bottom)} Z`
+}
+
+interface WaterStroke {
+  body: string
+  hair: string | null
+}
+
+/**
+ * 一笔水纹：中线由 2–4 个半波拼成，每个半波的长短、起伏都随机，正负交替才像水；
+ * 有的笔几乎是平的，有的起伏明显，每一笔还各自偏离基线一点，同一道线才不会排成一行
+ */
+function waterStroke(x0: number, width: number, w: Wave, rand: () => number): WaterStroke {
+  const mid = FLOW_H / 2 + (rand() - 0.5) * w.amp * 0.7
+  // 半波数随笔长走：短笔两个，长笔四个；起伏再按半波自身的长度封顶，短促的波不会陡成锯齿
+  const m = Math.min(4, 2 + Math.floor(width / 190))
+  const parts = Array.from({ length: m }, () => 0.6 + rand())
+  const partSum = parts.reduce((a, b) => a + b, 0)
+  let sign = rand() < 0.5 ? -1 : 1
+  const halves: { from: number; to: number; amp: number }[] = []
+  let hx = x0
+  for (const p of parts) {
+    const len = (width * p) / partSum
+    const amp = Math.min(w.amp * (0.15 + rand() * 0.85), len * 0.12)
+    halves.push({ from: hx, to: hx + len, amp: sign * amp })
+    hx += len
+    sign = -sign
+  }
+  const centre = (x: number) => {
+    const h = halves.find((s) => x <= s.to) ?? halves[halves.length - 1]
+    const t = Math.min(1, Math.max(0, (x - h.from) / (h.to - h.from)))
+    return mid + h.amp * Math.sin(Math.PI * t)
+  }
+  const weight = w.weight * (0.7 + rand() * 0.3)
+  const body = ribbon(x0, x0 + width, centre, weight)
+  let hair: string | null = null
+  if (w.hair && rand() < 0.55) {
+    // 副笔：贴着笔肚上方（偶尔下方）再跟一根细毛，像笔锋分了岔
+    const from = x0 + width * (0.15 + rand() * 0.25)
+    const to = from + width * (0.3 + rand() * 0.35)
+    const side = rand() < 0.7 ? -1 : 1
+    const lift = side * (weight * 0.8 + 1.6 + rand() * 1.4)
+    hair = ribbon(from, to, (x) => centre(x) + lift, weight * 0.32)
+  }
+  return { body, hair }
+}
+
+/** 一道水纹的全部笔画：一个视口宽里 3–5 笔，长的占 35%、短的 15%，空隙随机分配 */
+function buildLine(w: Wave): WaterStroke[] {
+  const rand = seededRandom(w.seed)
+  const n = 3 + Math.floor(rand() * 3)
+  const widths = Array.from({ length: n }, () => FLOW_HALF * (0.15 + rand() * 0.2))
+  const used = widths.reduce((a, b) => a + b, 0)
+  // 笔画总长不超过 78%，江面才有留白
+  const k = Math.min(1, (FLOW_HALF * 0.78) / used)
+  const free = FLOW_HALF - used * k
+  const gaps = Array.from({ length: n }, () => 0.3 + rand())
+  const gapSum = gaps.reduce((a, b) => a + b, 0)
+  let x = 0
+  return widths.map((width, i) => {
+    x += (free * gaps[i]) / gapSum
+    const s = waterStroke(x, width * k, w, rand)
+    x += width * k
+    return s
+  })
+}
+
+/** 六道水纹的笔画，模块加载时算一次 */
+const WATER = WAVES.map(buildLine)
 
 /* ───────────── 芦苇 ───────────── */
 
@@ -134,8 +185,6 @@ const REEDS: Reed[] = [
   { x: 256, h: 262, lean: 18, plume: 32, width: 1.4, opacity: 0.5, duration: 3.3, delay: -2.6 },
   { x: 298, h: 346, lean: 30, plume: 44, width: 1.7, opacity: 0.68, duration: 4, delay: -1.5 },
 ]
-
-type Pt = [number, number]
 
 /** 三次贝塞尔上 t 处的点：叶子要长在茎上 */
 function cubicAt([p0, p1, p2, p3]: Pt[], t: number): Pt {
@@ -238,13 +287,15 @@ export function River({ scene, onActive }: StorySceneProps) {
 function Stage({ progress, scene }: { progress: MotionValue<number>; scene: SceneDef }) {
   const reduce = useReducedMotion()
   // 越往下滚：日头越沉、暮色越重、水上的字越淡
+  // （每个区间都要在 0 与 1 两端钉住，滚过区间之后浏览器才不会把值插回初始态）
   const sunY = useTransform(progress, [0, 1], ['0svh', '9svh'])
   const sunFade = useTransform(progress, [0, 1], [1, 0.72])
   const glintFade = useTransform(progress, [0, 1], [1, 0.5])
-  const dusk = useTransform(progress, [0, 1], [0, 0.19])
+  const dusk = useTransform(progress, [0, 1], [0, 0.32])
   const shoreY = useTransform(progress, [0, 1], [0, -8])
+  const farShoreY = useTransform(progress, [0, 1], [0, -4])
   const reedY = useTransform(progress, [0, 1], [0, 18])
-  const wordFade = useTransform(progress, [0.55, 1], [1, 0.15])
+  const wordFade = useTransform(progress, [0, 0.55, 1], [1, 1, 0.15])
 
   return (
     <div className="relative h-full w-full">
@@ -255,17 +306,17 @@ function Stage({ progress, scene }: { progress: MotionValue<number>; scene: Scen
         style={{
           height: `${HORIZON}%`,
           background:
-            'linear-gradient(to bottom, color-mix(in srgb, var(--jh-night) 12%, transparent), transparent 45%, color-mix(in srgb, var(--jh-lamp) 24%, transparent))',
+            'linear-gradient(to bottom, color-mix(in srgb, var(--jh-night) 16%, transparent), transparent 45%, color-mix(in srgb, var(--jh-lamp) 24%, transparent))',
         }}
       />
 
-      {/* 落日：一轮朱砂，慢慢沉到远岸后面 */}
+      {/* 落日：一轮朱砂，慢慢沉到远岸后面。光晕收得小一点，天才不会像喷出来的 */}
       <motion.div
         aria-hidden
         style={{ y: sunY, opacity: sunFade }}
         className="absolute top-[30%] left-[38%] sm:left-[64%]"
       >
-        <div className="absolute size-[42vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,var(--jh-lamp)_0%,transparent_62%)] opacity-40" />
+        <div className="absolute size-[28vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,var(--jh-lamp)_0%,transparent_62%)] opacity-30" />
         <motion.div
           initial={{ opacity: 0, scale: 0.85 }}
           whileInView={{ opacity: 0.62, scale: 1 }}
@@ -296,12 +347,38 @@ function Stage({ progress, scene }: { progress: MotionValue<number>; scene: Scen
         </svg>
       </div>
 
+      {/* 更远的一层岸：淡得像雾，日头先沉进它，天与水之间才有纵深 */}
+      <motion.div
+        aria-hidden
+        style={{ y: farShoreY, top: `${HORIZON - 13}%` }}
+        className="absolute inset-x-0 h-[7%] text-(--jh-ink)"
+      >
+        <svg
+          viewBox="0 0 1440 70"
+          preserveAspectRatio="none"
+          className="h-full w-full"
+          style={{ filter: 'url(#jh-ink-rough)' }}
+        >
+          <defs>
+            <linearGradient id="jh-river-shore-far" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="currentColor" stopOpacity="0.13" />
+              <stop offset="0.6" stopColor="currentColor" stopOpacity="0.07" />
+              <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M0 46 Q110 30 230 38 Q350 46 450 30 Q540 18 650 30 Q760 42 870 36 Q980 30 1080 40 Q1170 48 1270 34 Q1350 24 1440 36 L1440 70 L0 70 Z"
+            fill="url(#jh-river-shore-far)"
+          />
+        </svg>
+      </motion.div>
+
       {/* 远岸：一线低矮的墨影，日头落到它后面 */}
       <motion.div
         aria-hidden
         // 岸线下缘贴住水平线
         style={{ y: shoreY, top: `${HORIZON - 7}%` }}
-        className="absolute inset-x-0 h-[7%] text-(--jh-ink)"
+        className="absolute inset-x-0 h-[7%] text-(--jh-ink) dark:opacity-75"
       >
         <svg
           viewBox="0 0 1440 70"
@@ -328,10 +405,10 @@ function Stage({ progress, scene }: { progress: MotionValue<number>; scene: Scen
         />
       </motion.div>
 
-      {/* 江：一层淡淡的水色，六道水纹各自顺流而下 */}
+      {/* 江：一层淡淡的水色，六道水纹各自顺流而下。--wv 是窄屏上的竖向拉伸，笔画才不至于细得看不见 */}
       <div
         aria-hidden
-        className="absolute inset-x-0 bottom-0 text-(--jh-water) [--sw:2.4] sm:[--sw:1.5] lg:[--sw:1]"
+        className="absolute inset-x-0 bottom-0 text-(--jh-water) [--wv:1.7] sm:[--wv:1.3] lg:[--wv:1]"
         style={{ height: `${100 - HORIZON}%` }}
       >
         <div
@@ -366,9 +443,13 @@ function Stage({ progress, scene }: { progress: MotionValue<number>; scene: Scen
         ))}
       </motion.div>
 
-      {/* 近岸的芦苇 */}
-      <motion.div aria-hidden style={{ y: reedY }} className="absolute inset-0 text-(--jh-ink)">
-        <div className="absolute bottom-0 left-0 h-[8%] w-[72%] sm:w-[48%]">
+      {/* 近岸的芦苇：窄屏上整组抬到旁白上方，芦苇就站在浅水里；宽屏才有岸 */}
+      <motion.div
+        aria-hidden
+        style={{ y: reedY }}
+        className="absolute inset-x-0 top-0 bottom-[12%] text-(--jh-ink) sm:bottom-0"
+      >
+        <div className="absolute bottom-0 left-0 hidden h-[8%] w-[48%] [mask-image:linear-gradient(to_right,black_30%,transparent)] sm:block dark:opacity-70">
           <svg
             viewBox="0 0 1000 100"
             preserveAspectRatio="none"
@@ -376,9 +457,10 @@ function Stage({ progress, scene }: { progress: MotionValue<number>; scene: Scen
             style={{ filter: 'url(#jh-ink-rough)' }}
           >
             <defs>
-              <linearGradient id="jh-river-bank" x1="0" y1="0" x2="1" y2="0">
+              {/* 岸是贴着纸边的一抹湿墨：往上渐渐淡掉，不压着旁白 */}
+              <linearGradient id="jh-river-bank" x1="0" y1="1" x2="0" y2="0">
                 <stop offset="0" stopColor="currentColor" stopOpacity="0.34" />
-                <stop offset="0.55" stopColor="currentColor" stopOpacity="0.18" />
+                <stop offset="0.45" stopColor="currentColor" stopOpacity="0.14" />
                 <stop offset="1" stopColor="currentColor" stopOpacity="0" />
               </linearGradient>
             </defs>
@@ -395,7 +477,8 @@ function Stage({ progress, scene }: { progress: MotionValue<number>; scene: Scen
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 1.6, delay: 0.2, ease: EASE }}
-          className="absolute bottom-0 left-[1%] h-[27%] sm:h-[46%]"
+          // 茎脚在雾里化开：宽屏上旁白就贴在画布下缘，化开的区段要盖过它，茎才不会一根根直插进字里
+          className="absolute bottom-0 left-[1%] h-[27%] [mask-image:linear-gradient(to_top,transparent_0,black_24%)] sm:h-[46%] sm:[mask-image:linear-gradient(to_top,transparent_16%,black_36%)]"
           style={{ aspectRatio: `${REED_W} / ${REED_H}` }}
         >
           {REEDS.map((r, i) => {
@@ -456,7 +539,7 @@ function Stage({ progress, scene }: { progress: MotionValue<number>; scene: Scen
           ))}
       </motion.div>
 
-      {/* 暮色：随滚动一点点压下来，接住下一幕的夜 */}
+      {/* 暮色：随滚动一点点压下来，滚到底时画面已经暗了，接住下一幕的夜 */}
       <motion.div
         aria-hidden
         style={{
@@ -484,10 +567,9 @@ function Stage({ progress, scene }: { progress: MotionValue<number>; scene: Scen
 
 /** 一道水纹：容器两倍视口宽，整体向右平移一半后无缝接上 */
 function WaveLine({ wave, index }: { wave: Wave; index: number }) {
-  const { d, length } = wavePath(wave)
   const id = `jh-river-wave-${index}`
-  // 画布随视口宽等比缩放，高度也按同一比例给
-  const h = `${(200 * FLOW_H) / FLOW_W}vw`
+  // 画布随视口宽等比缩放，高度按同一比例再乘 --wv
+  const h = `calc(${(200 * FLOW_H) / FLOW_W}vw * var(--wv))`
   return (
     <div
       className="absolute left-0 w-[200vw]"
@@ -501,32 +583,25 @@ function WaveLine({ wave, index }: { wave: Wave; index: number }) {
     >
       <svg viewBox={`0 0 ${FLOW_W} ${FLOW_H}`} preserveAspectRatio="none" className="h-full w-full">
         <defs>
-          {/* 沿笔画方向的浓淡：像运笔时的提按，每半幅重复一次 */}
-          <linearGradient
-            id={id}
-            gradientUnits="userSpaceOnUse"
-            x1="0"
-            y1="0"
-            x2={FLOW_W / 2}
-            y2="0"
-            spreadMethod="repeat"
-          >
-            <stop offset="0" stopColor="currentColor" stopOpacity="0.12" />
-            <stop offset="0.26" stopColor="currentColor" stopOpacity="1" />
-            <stop offset="0.5" stopColor="currentColor" stopOpacity="0.42" />
-            <stop offset="0.76" stopColor="currentColor" stopOpacity="1" />
-            <stop offset="1" stopColor="currentColor" stopOpacity="0.12" />
+          {/* 沿笔画方向的浓淡：起笔重、中段提、收笔飞白；按每一笔自身的长度铺 */}
+          <linearGradient id={id} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="currentColor" stopOpacity="0.3" />
+            <stop offset="0.14" stopColor="currentColor" stopOpacity="1" />
+            <stop offset="0.46" stopColor="currentColor" stopOpacity="0.62" />
+            <stop offset="0.72" stopColor="currentColor" stopOpacity="0.92" />
+            <stop offset="1" stopColor="currentColor" stopOpacity="0.1" />
           </linearGradient>
+          <g id={`${id}-half`} fill={`url(#${id})`}>
+            {WATER[index].map((s, k) => (
+              <Fragment key={k}>
+                <path d={s.body} />
+                {s.hair && <path d={s.hair} opacity="0.6" />}
+              </Fragment>
+            ))}
+          </g>
         </defs>
-        <path
-          d={d}
-          pathLength={length}
-          fill="none"
-          stroke={`url(#${id})`}
-          strokeLinecap="round"
-          strokeDasharray={wave.dash}
-          style={{ strokeWidth: `calc(${wave.width}px * var(--sw))` }}
-        />
+        <use href={`#${id}-half`} />
+        <use href={`#${id}-half`} x={FLOW_HALF} />
       </svg>
     </div>
   )
