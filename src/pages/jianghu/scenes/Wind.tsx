@@ -3,6 +3,7 @@ import {
   useMotionValue,
   useReducedMotion,
   useSpring,
+  useTime,
   useTransform,
   type MotionValue,
 } from 'motion/react'
@@ -32,7 +33,7 @@ const HILLS: { d: string; opacity: number; depth: number }[] = [
 ]
 
 /** 风：五道长线从左到右掠过整幅画（viewBox 1440×900，横向拉伸铺满舞台） */
-const GUSTS: { d: string; width: number; duration: number; delay: number; echo?: boolean }[] = [
+const GUSTS: { d: string; width: number; duration: number; delay: number }[] = [
   {
     d: 'M-80 170 C 220 118, 440 204, 720 150 S 1120 106, 1520 160',
     width: 1.3,
@@ -44,7 +45,6 @@ const GUSTS: { d: string; width: number; duration: number; delay: number; echo?:
     width: 1.9,
     duration: 6,
     delay: 1.6,
-    echo: true,
   },
   {
     d: 'M-80 486 C 220 444, 460 520, 740 466 S 1160 430, 1520 484',
@@ -57,7 +57,6 @@ const GUSTS: { d: string; width: number; duration: number; delay: number; echo?:
     width: 2.1,
     duration: 5.6,
     delay: 0.9,
-    echo: true,
   },
   {
     d: 'M-80 772 C 300 734, 560 806, 860 760 S 1240 722, 1520 774',
@@ -66,6 +65,20 @@ const GUSTS: { d: string; width: number; duration: number; delay: number; echo?:
     delay: 2.4,
   },
 ]
+/** 风线都从 x=-80 画到 1520：笔画走到哪，渐变就跟到哪 */
+const GUST_X0 = -80
+const GUST_W = 1600
+/** 一笔风占整条路径的比例 */
+const GUST_SPAN = 0.3
+
+const easeInOut = (p: number) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2)
+const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
+
+/** 地平线：一笔长横，手抖出 ±3 的起伏。细线不走位移滤镜——会碎成一格一格的台阶 */
+const HORIZON =
+  'M-40 44 C-15 43.3,61.7 40.2,110 40 C158.3 39.8,201.7 44,250 43 C298.3 42,348.3 34.8,400 34 C451.7 33.2,506.7 38.2,560 38 C613.3 37.8,666.7 33.2,720 33 C773.3 32.8,828.3 35.5,880 37 C931.7 38.5,980 41.7,1030 42 C1080 42.3,1131.7 38.5,1180 39 C1228.3 39.5,1270 44.8,1320 45 C1370 45.2,1453.3 40.8,1480 40'
+/** 枯笔：断断续续的飞白 */
+const DRY_DASH = '64 3 38 5 92 2 26 6 118 4'
 
 /** 草丛：几笔短弧，都顺着风向右倾 */
 const GRASS: { className: string; opacity: number; duration: number; delay: number }[] = [
@@ -180,7 +193,7 @@ export function Wind({ scene, onActive }: StorySceneProps) {
             </motion.div>
           ))}
 
-          <Gusts progress={progress} mx={smx} />
+          <Gusts progress={progress} mx={smx} reduce={!!reduce} />
           <Figure progress={progress} />
 
           {/* 碎叶与尘点 */}
@@ -280,7 +293,7 @@ function Hill({
   )
 }
 
-/** 地平线：一笔长横，起笔重、收笔轻；线下一抹淡墨，平野上再补两笔枯笔 */
+/** 地平线：一笔长横，起笔重、收笔轻；线下一抹淡墨，平野上再补两笔枯笔（手机上只留近的一笔） */
 function Ground() {
   return (
     <div aria-hidden className="absolute inset-x-0 top-[66%] h-[34%] text-(--jh-ink)">
@@ -295,7 +308,6 @@ function Ground() {
         viewBox="0 0 1440 340"
         preserveAspectRatio="none"
         className="absolute inset-0 h-full w-full"
-        style={{ filter: 'url(#jh-ink)' }}
       >
         <defs>
           <linearGradient id="jh-wind-horizon" x1="0" y1="0" x2="1" y2="0">
@@ -313,7 +325,7 @@ function Ground() {
           </linearGradient>
         </defs>
         <motion.path
-          d="M-40 44 C 160 36, 300 50, 460 42 S 760 30, 940 44 S 1240 52, 1480 38"
+          d={HORIZON}
           fill="none"
           stroke="url(#jh-wind-horizon)"
           strokeWidth="2.6"
@@ -329,14 +341,17 @@ function Ground() {
           stroke="url(#jh-wind-dry)"
           strokeWidth="2.4"
           strokeLinecap="round"
+          strokeDasharray={DRY_DASH}
           opacity="0.2"
         />
         <path
+          className="hidden sm:block"
           d="M740 206 C 860 194, 960 212, 1060 202 S 1180 196, 1220 202"
           fill="none"
           stroke="url(#jh-wind-dry)"
           strokeWidth="2"
           strokeLinecap="round"
+          strokeDasharray={DRY_DASH}
           opacity="0.15"
         />
       </svg>
@@ -345,7 +360,16 @@ function Ground() {
 }
 
 /** 风的笔触：每道线循环「起笔 — 拉长 — 收尽」，像一阵阵掠过去的风 */
-function Gusts({ progress, mx }: { progress: MotionValue<number>; mx: MotionValue<number> }) {
+function Gusts({
+  progress,
+  mx,
+  reduce,
+}: {
+  progress: MotionValue<number>
+  mx: MotionValue<number>
+  reduce: boolean
+}) {
+  const time = useTime()
   const mouseX = useTransform(mx, (v) => v * -14)
   const scrollX = useTransform(progress, [0, 1], [0, 44])
   const x = useTransform(() => mouseX.get() + scrollX.get())
@@ -359,37 +383,73 @@ function Gusts({ progress, mx }: { progress: MotionValue<number>; mx: MotionValu
         className="h-full w-full overflow-visible"
       >
         {GUSTS.map((g, i) => (
-          <motion.path
-            key={i}
-            d={g.d}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={g.width}
-            strokeLinecap="round"
-            initial={{ pathLength: 0, pathOffset: 0 }}
-            animate={{ pathLength: [0, 0.4, 0], pathOffset: [0, 0.6, 1] }}
-            transition={{
-              duration: g.duration,
-              repeat: Infinity,
-              delay: g.delay,
-              ease: 'easeInOut',
-            }}
-          />
+          <Gust key={i} gust={g} index={i} time={time} reduce={reduce} />
         ))}
       </svg>
     </motion.div>
   )
 }
 
-/** 行者：斗笠、长袍、背上一柄剑、腰后一只囊。剪影，不描细节；衣摆单独一片随风翻动 */
+/**
+ * 一笔风：笔头从画外左侧起，掠过整幅，收在画外右侧。
+ * 渐变用 userSpaceOnUse 跟着笔画两端走，所以这一截线永远是两头淡、中间实——像提按过的一笔，而不是一根截断的铁丝。
+ */
+function Gust({
+  gust,
+  index,
+  time,
+  reduce,
+}: {
+  gust: (typeof GUSTS)[number]
+  index: number
+  time: MotionValue<number>
+  reduce: boolean
+}) {
+  // 0 → 1 的一个周期：慢起慢收，中段快；减少动态时各停在不同位置
+  const phase = useTransform(time, (t) => {
+    if (reduce) return 0.36 + index * 0.1
+    const s = t / 1000 - gust.delay
+    return s < 0 ? 0 : easeInOut((s / gust.duration) % 1)
+  })
+  const tail = useTransform(phase, (p) => clamp01(p * (1 + GUST_SPAN) - GUST_SPAN))
+  const head = useTransform(phase, (p) => clamp01(p * (1 + GUST_SPAN)))
+  const length = useTransform(() => head.get() - tail.get())
+  const x1 = useTransform(tail, (f) => GUST_X0 + GUST_W * f)
+  const x2 = useTransform(head, (f) => GUST_X0 + GUST_W * f)
+  const id = `jh-wind-gust-${index}`
+  return (
+    <>
+      <defs>
+        <motion.linearGradient id={id} gradientUnits="userSpaceOnUse" x1={x1} y1="0" x2={x2} y2="0">
+          <stop offset="0" stopColor="currentColor" stopOpacity="0" />
+          <stop offset="0.3" stopColor="currentColor" stopOpacity="1" />
+          <stop offset="0.62" stopColor="currentColor" stopOpacity="1" />
+          <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+        </motion.linearGradient>
+      </defs>
+      <motion.path
+        d={gust.d}
+        fill="none"
+        stroke={`url(#${id})`}
+        strokeWidth={gust.width}
+        style={{ pathLength: length, pathOffset: tail }}
+      />
+    </>
+  )
+}
+
+/**
+ * 行者：斗笠、溜肩、被风压住的背（囊鼓在腰后）、鼓风的袖，背风一侧衣摆扬起；一柄剑斜负于背。
+ * 剪影，不描细节。人先画正，再整个往风里倾 4°。
+ */
 function Figure({ progress }: { progress: MotionValue<number> }) {
   const x = useTransform(progress, [0, 1], [0, 26])
-  const y = useTransform(progress, [0, 1], [0, -8])
+  const y = useTransform(progress, [0, 1], [0, -3])
   return (
     <motion.div
       aria-hidden
       style={{ x, y }}
-      className="absolute bottom-[30%] left-[28%] h-[max(13%,88px)] -translate-x-1/2 text-(--jh-ink)"
+      className="absolute bottom-[30%] left-[28%] h-[max(13%,88px)] -translate-x-1/2 text-(--jh-ink) dark:opacity-70"
     >
       <motion.div
         className="h-full"
@@ -398,56 +458,48 @@ function Figure({ progress }: { progress: MotionValue<number> }) {
         viewport={{ once: true, amount: 0.6 }}
         transition={{ duration: 1.6, delay: 0.5, ease: EASE }}
       >
-        <svg
-          viewBox="0 0 130 200"
-          className="h-full w-auto overflow-visible"
-          style={{ filter: 'url(#jh-ink)' }}
-        >
+        <svg viewBox="0 0 130 200" className="h-full w-auto overflow-visible">
           {/* 脚下一抹淡墨 */}
-          <ellipse cx="74" cy="196" rx="38" ry="3" fill="currentColor" opacity="0.16" />
-          {/* 剑：斜负于背，剑柄探出左肩 */}
-          <path d="M72 130 L14 40" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-          <path
-            d="M17.9 55.3 L26.3 49.9"
-            stroke="currentColor"
-            strokeWidth="2.6"
-            strokeLinecap="round"
-          />
-          <circle cx="14" cy="40" r="2.4" fill="currentColor" />
-          {/* 囊 */}
-          <ellipse
-            cx="35"
-            cy="112"
-            rx="9"
-            ry="12"
-            transform="rotate(-14 35 112)"
-            fill="currentColor"
-          />
-          {/* 衣摆：背风一侧扬起，随风翻动 */}
-          <g
-            style={{
-              transformBox: 'fill-box',
-              transformOrigin: '50% 0%',
-              animation: 'jh-flutter 1.3s ease-in-out infinite alternate',
-            }}
-          >
-            <path
-              d="M48 132 L90 132 C93 140 95 146 97 152 C102 166 112 180 124 190 C112 197 100 187 88 193 C76 199 62 189 40 194 C44 178 46 156 48 132 Z"
-              fill="currentColor"
-            />
+          <ellipse cx="68" cy="193" rx="33" ry="2.6" fill="currentColor" opacity="0.14" />
+          <g transform="rotate(-4 65 190)">
+            {/* 不动的部分走一次毛边滤镜；衣摆一直在翻，放在滤镜外，免得每帧重新光栅化 */}
+            <g style={{ filter: 'url(#jh-ink)' }}>
+              {/* 剑：斜负于背，剑格藏在身后，只露右肩上的柄与腰后探出的鞘尾 */}
+              <path
+                d="M88 87 L47.2 178"
+                stroke="currentColor"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+              />
+              <path
+                d="M89.5 84 L98 65"
+                stroke="currentColor"
+                strokeWidth="3.4"
+                strokeLinecap="round"
+              />
+              <circle cx="98.3" cy="64.3" r="2.6" fill="currentColor" />
+              {/* 身：颈、溜肩，右边袖子鼓着风、腰略收；迎风一侧被风压平，囊斜挎在背上、肩下鼓出一块 */}
+              <path
+                d="M60 54 L69 54 L70 64 C76 65 85 69 89 78 C94 95 86 114 90 130 C90 152 83 178 70 190 L62 191 L56 189 C54 170 53 150 54 124 C44 120 40 90 50 80 C50 72 55 65 60 64 Z"
+                fill="currentColor"
+              />
+              {/* 斗笠：浅浅一个锥，檐比肩宽两三成 */}
+              <path d="M65 33 Q54 42 39 55.5 Q66 62 91 52.5 Q77 40 65 33 Z" fill="currentColor" />
+            </g>
+            {/* 衣摆：背风一侧被吹起，下缘撕出几个口子，随风翻动 */}
+            <g
+              style={{
+                transformBox: 'fill-box',
+                transformOrigin: '50% 0%',
+                animation: 'jh-flutter 1.3s ease-in-out infinite alternate',
+              }}
+            >
+              <path
+                d="M66 130 L90 130 C93 143 99 157 104 170 L99 169 L97 178 L91 175 L86 184 L79 181 L74 189 L68 190 L66 190 Z"
+                fill="currentColor"
+              />
+            </g>
           </g>
-          {/* 身 */}
-          <path
-            d="M40 82 C44 72 76 68 86 80 C90 100 92 122 96 152 L44 152 C42 122 40 100 40 82 Z"
-            fill="currentColor"
-          />
-          {/* 颈 */}
-          <path d="M52 60 L68 60 L70 78 L50 78 Z" fill="currentColor" />
-          {/* 斗笠 */}
-          <path
-            d="M20 64 C36 56 48 46 60 34 C74 46 90 58 104 68 C86 74 34 72 20 64 Z"
-            fill="currentColor"
-          />
         </svg>
       </motion.div>
     </motion.div>
