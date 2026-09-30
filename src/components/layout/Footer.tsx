@@ -32,8 +32,13 @@ export function Footer() {
         </div>
         <div className="flex flex-col gap-2 border-t border-line pt-4 text-fg-3 sm:flex-row sm:items-center sm:justify-between">
           <span>Copyright © {new Date().getFullYear()} showMe. 为开发者打造的小工具集。</span>
-          <span>
-            按 <kbd className="font-sans">/</kbd> 或 <kbd className="font-sans">⌘K</kbd> 随时搜索
+          <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <Link to="/jianghu" className="transition-colors hover:text-fg hover:underline">
+              江湖 · 一阕临江仙
+            </Link>
+            <span>
+              按 <kbd className="font-sans">/</kbd> 或 <kbd className="font-sans">⌘K</kbd> 随时搜索
+            </span>
           </span>
         </div>
       </div>

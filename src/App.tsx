@@ -1,9 +1,14 @@
+import { lazy, Suspense } from 'react'
 import { createBrowserRouter, createHashRouter, RouterProvider } from 'react-router-dom'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { AppLayout } from '@/components/layout/AppLayout'
 import Home from '@/pages/Home'
 import NotFound from '@/pages/NotFound'
 import ToolPage from '@/pages/ToolPage'
 import ToolsIndex from '@/pages/Tools'
+
+// 《临江仙 · 江湖》：独立的水墨长卷页，不套工具站布局，按需加载
+const Jianghu = lazy(() => import('@/pages/jianghu'))
 
 const routes = [
   {
@@ -14,6 +19,16 @@ const routes = [
       { path: '/t/:id', element: <ToolPage /> },
       { path: '*', element: <NotFound /> },
     ],
+  },
+  {
+    path: '/jianghu',
+    element: (
+      <ErrorBoundary>
+        <Suspense fallback={<div className="min-h-dvh bg-bg" />}>
+          <Jianghu />
+        </Suspense>
+      </ErrorBoundary>
+    ),
   },
 ]
 
