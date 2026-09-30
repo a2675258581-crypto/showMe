@@ -1,7 +1,7 @@
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import { motion, useInView, useScroll, type MotionValue, type Variants } from 'motion/react'
 import { cn } from '@/lib/cn'
-import type { SceneDef, SceneTone } from './poem'
+import { UI, type SceneDef, type SceneTone } from './poem'
 
 export const EASE = [0.16, 1, 0.3, 1] as const
 
@@ -207,7 +207,7 @@ export function Narration({
       viewport={{ once: true, amount: 0.8 }}
       transition={{ duration: 0.9, delay, ease: EASE }}
       className={cn(
-        'jh-song max-w-[30em] text-[15px] leading-[1.9] tracking-[0.04em] text-(--jh-fg-2) sm:text-[17px]',
+        'jh-song max-w-[30em] text-[15px] leading-[1.9] tracking-[0.04em] text-pretty text-(--jh-fg-2) sm:text-[17px]',
         className,
       )}
     >
@@ -271,7 +271,7 @@ export function Seal({
   return (
     <motion.div
       role="img"
-      aria-label={`印章：${text}`}
+      aria-label={`${UI.sealLabel}${text}`}
       initial={{ opacity: 0, scale: 1.7, rotate: -14 }}
       whileInView={{ opacity: 1, scale: 1, rotate: -4 }}
       viewport={{ once: true, amount: 0.8 }}

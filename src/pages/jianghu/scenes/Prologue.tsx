@@ -76,7 +76,10 @@ export function Prologue({ onActive }: { onActive: (id: string) => void }) {
           }}
         >
           {/* 远山 */}
-          <div aria-hidden className="absolute inset-x-0 bottom-0 h-[64%] text-(--jh-ink)">
+          <div
+            aria-hidden
+            className="absolute inset-x-0 bottom-0 h-[64%] text-(--jh-ink) dark:opacity-70"
+          >
             {RIDGES.map((r, i) => (
               <Ridge key={i} ridge={r} index={i} mx={smx} my={smy} progress={progress} />
             ))}
@@ -191,7 +194,9 @@ function Ridge({
 
 function Title({ progress }: { progress: MotionValue<number> }) {
   const y = useTransform(progress, [0, 1], [0, -90])
-  const opacity = useTransform(progress, [0, 0.75], [1, 0])
+  // 输入范围两端都钉在 0 和 1：motion 会把滚动映射交给原生 ScrollTimeline，
+  // 关键帧只到 0.75 的话，之后浏览器会把值插回初始的 1，标题就又冒出来了
+  const opacity = useTransform(progress, [0, 0.75, 1], [1, 0, 0])
   return (
     <motion.div
       style={{ y, opacity }}

@@ -6,7 +6,7 @@ import { ChevronLeft } from 'lucide-react'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { cn } from '@/lib/cn'
 import { ChapterRail, type RailItem } from './ChapterRail'
-import { FINALE, SCENES, type SceneTone } from './poem'
+import { FINALE, PROLOGUE, SCENES, UI, type SceneTone } from './poem'
 import { InkDefs, PaperGrain } from './primitives'
 import { Bridge } from './scenes/Bridge'
 import { Finale } from './scenes/Finale'
@@ -19,13 +19,13 @@ import { Wind } from './scenes/Wind'
 import './jianghu.css'
 
 const RAIL: RailItem[] = [
-  { id: 'prologue', label: '首', title: '卷首' },
+  { id: 'prologue', label: UI.rail.prologue, title: PROLOGUE.label },
   ...SCENES.map((s, i) => ({
     id: s.id,
-    label: '一二三四五六'[i],
+    label: UI.rail.acts[i],
     title: `${s.chapter} · ${s.name}`,
   })),
-  { id: 'finale', label: '终', title: `${FINALE.chapter} · ${FINALE.name}` },
+  { id: 'finale', label: UI.rail.finale, title: `${FINALE.chapter} · ${FINALE.name}` },
 ]
 
 const TONES: Record<string, SceneTone> = {
@@ -79,7 +79,7 @@ export default function JianghuPage() {
         <InkDefs />
         <PaperGrain />
         <TopBar />
-        <ChapterRail items={RAIL} activeId={active} onSelect={scrollTo} />
+        <ChapterRail items={RAIL} label={UI.rail.navLabel} activeId={active} onSelect={scrollTo} />
 
         <Prologue onActive={setActive} />
         <Wind scene={SCENES[0]} onActive={setActive} />
@@ -94,18 +94,22 @@ export default function JianghuPage() {
   )
 }
 
-/** 本页专用顶栏：左边回站点首页，右边切换外观；颜色随当前幕昼夜变化 */
+/**
+ * 本页专用顶栏：左边回站点首页，右边切换外观。
+ * 幕与幕之间底色从纸到夜来回切换，顶栏正好压在两幕的接缝上，
+ * 所以不按幕的色调取色，而是用 difference 混合：白字与底色相减，纸上成墨、夜里成白。
+ */
 function TopBar() {
   return (
-    <header className="fixed inset-x-0 top-0 z-40 flex h-12 items-center justify-between px-3 sm:px-5">
+    <header className="fixed inset-x-0 top-0 z-40 flex h-12 items-center justify-between px-3 mix-blend-difference sm:px-5">
       <Link
         to="/"
-        className="flex items-center gap-0.5 rounded-full py-1 pr-3 pl-1.5 font-sans text-[13px] font-medium tracking-tight text-(--jh-fg-2) transition-colors duration-500 hover:text-(--jh-fg)"
+        className="flex items-center gap-0.5 rounded-full py-1 pr-3 pl-1.5 font-sans text-[13px] font-medium tracking-tight text-white opacity-75 transition-opacity duration-300 hover:opacity-100"
       >
         <ChevronLeft className="size-4" />
         showMe
       </Link>
-      <div className="[&>button]:text-(--jh-fg-2) [&>button:hover]:bg-transparent [&>button:hover]:text-(--jh-fg)">
+      <div className="opacity-75 transition-opacity duration-300 hover:opacity-100 [&>button]:text-white [&>button:hover]:bg-transparent [&>button:hover]:text-white">
         <ThemeToggle />
       </div>
     </header>

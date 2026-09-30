@@ -33,9 +33,17 @@ export const POEM = {
 } as const
 
 export const PROLOGUE = {
+  label: '卷首',
   subtitle: '一阕词，一段路。',
   hint: '向下展卷',
   seal: '一阕江湖',
+} as const
+
+/** 页面上零散的界面文案（章节轨道、无障碍名称），也收在这里，字体子集按本目录源码取字 */
+export const UI = {
+  /** 章节轨道：卷首、六幕、终章各一个字 */
+  rail: { prologue: '首', acts: '一二三四五六', finale: '终', navLabel: '章节' },
+  sealLabel: '印章：',
 } as const
 
 export const SCENES: SceneDef[] = [

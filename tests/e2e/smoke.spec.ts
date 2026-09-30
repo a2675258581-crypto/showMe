@@ -52,7 +52,7 @@ test('江湖页：七幕滚到底，全词与印章出现且无报错', async ({
   const errors = collectErrors(page)
   await page.goto('/jianghu')
   await expect(page.getByRole('heading', { level: 1 })).toContainText('江湖')
-  await expect(page.getByText('一剑一囊风满袂')).toHaveCount(1)
+  await expect(page.getByText('一剑一囊风满袂', { exact: true })).toHaveCount(1)
   // 一路滚到底，让每一幕都渲染、动画都跑一遍
   for (let i = 0; i < 14; i++) {
     await page.mouse.wheel(0, 1600)

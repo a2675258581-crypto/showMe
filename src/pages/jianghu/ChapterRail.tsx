@@ -12,16 +12,19 @@ export interface RailItem {
 /** 右侧章节轨道（桌面端）：当前幕套一个朱砂圈，点击平滑滚到那一幕 */
 export function ChapterRail({
   items,
+  label,
   activeId,
   onSelect,
 }: {
   items: RailItem[]
+  /** 导航的无障碍名称 */
+  label: string
   activeId: string
   onSelect: (id: string) => void
 }) {
   return (
     <nav
-      aria-label="章节"
+      aria-label={label}
       className="fixed top-1/2 right-4 z-40 hidden -translate-y-1/2 flex-col items-center gap-0.5 lg:flex"
     >
       {items.map((it) => {
