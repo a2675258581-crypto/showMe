@@ -25,8 +25,8 @@ import {
  */
 const W = 1440
 const H = 560
-/** 石拱桥：两端桥脚、岸线高度、拱起高度、水面、券洞半径 */
-const BR = { x0: 420, x1: 1380, bank: 300, rise: 140, water: 336, r: 150 } as const
+/** 石拱桥：两端桥脚、岸线高度、拱起高度、水面、券洞半径。跨度约占画面 55%，左边留给词 */
+const BR = { x0: 505, x1: 1295, bank: 300, rise: 134, water: 332, r: 128 } as const
 const MID = (BR.x0 + BR.x1) / 2
 /** 骑者剪影约 190 单位宽，缩到画面里差不多九分之一的宽度 */
 const RIDER_SCALE = 0.7
@@ -51,14 +51,22 @@ const deckPts = Array.from({ length: SEG + 1 }, (_, i) => {
   const x = BR.x0 + ((BR.x1 - BR.x0) * i) / SEG
   return `${x.toFixed(1)} ${deckY(x).toFixed(1)}`
 })
-/** 桥身：桥面弧线 + 两侧桥墩斜入水，中间挖去半圆券洞（evenodd） */
+/** 桥面弧线：从左脚一笔扫到右脚 */
+const DECK_D = `M ${deckPts.join(' L ')}`
+/** 桥脚到起拱点的水平距离 */
+const ABUT = MID - BR.r - BR.x0
+/**
+ * 桥身：桥面弧线扫到右脚，桥脚收在岸线上，桥底顺着岸慢慢沉到水面接住半圆券洞，再回到左脚——
+ * 一弯薄薄的月牙，不是一整块从桥面填到水里的墨。
+ */
 const BODY_D = [
-  `M ${BR.x0} ${BR.bank} L ${deckPts.join(' L ')}`,
-  `L ${BR.x1 + 26} ${BR.water} L ${BR.x0 - 26} ${BR.water} Z`,
-  `M ${MID - BR.r} ${BR.water} A ${BR.r} ${BR.r} 0 0 1 ${MID + BR.r} ${BR.water} Z`,
+  DECK_D,
+  `C ${BR.x1 - ABUT * 0.45} ${BR.bank + 2}, ${MID + BR.r + ABUT * 0.3} ${BR.water}, ${MID + BR.r} ${BR.water}`,
+  `A ${BR.r} ${BR.r} 0 0 0 ${MID - BR.r} ${BR.water}`,
+  `C ${MID - BR.r - ABUT * 0.3} ${BR.water}, ${BR.x0 + ABUT * 0.45} ${BR.bank + 2}, ${BR.x0} ${BR.bank} Z`,
 ].join(' ')
 /** 券洞外圈一道淡线，像石头砌出来的拱券 */
-const ARCH_RING_D = `M ${MID - BR.r - 13} ${BR.water} A ${BR.r + 13} ${BR.r + 13} 0 0 1 ${MID + BR.r + 13} ${BR.water}`
+const ARCH_RING_D = `M ${MID - BR.r - 11} ${BR.water} A ${BR.r + 11} ${BR.r + 11} 0 0 1 ${MID + BR.r + 11} ${BR.water}`
 const RAIL_H = 20
 const RAIL_PAD = 28
 const railPts = Array.from({ length: SEG + 1 }, (_, i) => {
@@ -66,23 +74,26 @@ const railPts = Array.from({ length: SEG + 1 }, (_, i) => {
   return `${x.toFixed(1)} ${(deckY(x) - RAIL_H).toFixed(1)}`
 })
 const RAIL_D = `M ${railPts.join(' L ')}`
-/** 望柱：十二根，等距立在桥面上 */
-const POSTS = Array.from({ length: 12 }, (_, i) => {
-  const x = BR.x0 + RAIL_PAD + ((BR.x1 - BR.x0 - RAIL_PAD * 2) * i) / 11
+/** 望柱：十一根，等距立在桥面上 */
+const POSTS = Array.from({ length: 11 }, (_, i) => {
+  const x = BR.x0 + RAIL_PAD + ((BR.x1 - BR.x0 - RAIL_PAD * 2) * i) / 10
   return { x, y: deckY(x) }
 })
+/** 岸线两头各伸出多远：左岸只留短短一截，词那边是干净的纸；右岸走进雾里 */
+const BANK_L = 180
+const BANK_R = 150
 
 /** 一片叶子（viewBox -7 -8 14 16） */
 const LEAF_D = 'M0 -7 C4.5 -4.5 6 0.5 0 7 C-6 0.5 -4.5 -4.5 0 -7 Z'
 
 /** 落在桥面上的叶子：马蹄到了就被惊起来，翻个身落在前面一点 */
 const DECK_LEAVES = [
-  { x: 480, rot: 62 },
-  { x: 610, rot: -20 },
-  { x: 770, rot: 100 },
-  { x: 960, rot: -70 },
-  { x: 1120, rot: 30 },
-  { x: 1290, rot: -110 },
+  { x: 560, rot: 62 },
+  { x: 700, rot: -20 },
+  { x: 840, rot: 100 },
+  { x: 990, rot: -70 },
+  { x: 1130, rot: 30 },
+  { x: 1250, rot: -110 },
 ]
 
 /** 空中的落叶：位置、大小、快慢用固定种子生成，每次渲染一致 */
@@ -169,6 +180,45 @@ const BRANCH_LEAVES = [
   { x: 74, y: 312, rot: -30, s: 0.8 },
 ]
 
+type Pt = [number, number]
+
+/**
+ * 一条腿：肩（髋）、关节、球节三点的中线，粗细由上往下收，末端加一小片蹄，
+ * 拼成一整块由粗到细的剪影；关节处用二次曲线带过，不见折角。
+ */
+function legPath([top, joint, fet]: [Pt, Pt, Pt], [w0, w1, w2]: [number, number, number]) {
+  const normal = (a: Pt, b: Pt): Pt => {
+    const dx = b[0] - a[0]
+    const dy = b[1] - a[1]
+    const len = Math.hypot(dx, dy)
+    return [-dy / len, dx / len]
+  }
+  const n0 = normal(top, joint)
+  const n2 = normal(joint, fet)
+  const n1: Pt = [(n0[0] + n2[0]) / 2, (n0[1] + n2[1]) / 2]
+  const at = (p: Pt, n: Pt, w: number, side: 1 | -1) =>
+    `${(p[0] + (n[0] * w * side) / 2).toFixed(1)} ${(p[1] + (n[1] * w * side) / 2).toFixed(1)}`
+  const [fx, fy] = fet
+  return [
+    `M ${at(top, n0, w0, 1)}`,
+    `Q ${at(joint, n1, w1, 1)} ${at(fet, n2, w2, 1)}`,
+    // 蹄：后跟略收，前端向前翘一点
+    `L ${fx - 3.5} ${fy + 7} L ${fx + 5} ${fy + 8} L ${fx + 3} ${fy + 1}`,
+    `L ${at(fet, n2, w2, -1)}`,
+    `Q ${at(joint, n1, w1, -1)} ${at(top, n0, w0, -1)} Z`,
+  ].join(' ')
+}
+
+/** 前腿从肩、后腿从髋各摆一对：前腿略向前伸，后腿飞节向后凸；上端藏在马腹里 */
+const SHOULDER: Pt = [30, -54]
+const HIP: Pt = [-38, -54]
+const LEGS = {
+  fl: legPath([SHOULDER, [38, -28], [45, -8]], [10, 6, 4]),
+  fr: legPath([SHOULDER, [25, -28], [21, -8]], [10, 6, 4]),
+  hl: legPath([HIP, [-49, -30], [-45, -8]], [11, 6.5, 4]),
+  hr: legPath([HIP, [-58, -30], [-60, -8]], [11, 6.5, 4]),
+}
+
 /** 第三幕 · 过桥：一座石拱桥，一骑人影随着滚动从左走到右，秋叶从右上的枯枝上落下来 */
 export function Bridge({ scene, onActive }: StorySceneProps) {
   const reduce = useReducedMotion()
@@ -226,7 +276,8 @@ export function Bridge({ scene, onActive }: StorySceneProps) {
             name={scene.name}
             className="absolute top-16 left-4 z-10 sm:left-8"
           />
-          <div className="absolute inset-y-0 left-[8%] z-10 flex items-center sm:left-[12%] lg:left-[16%]">
+          {/* 大屏上把词抬高一点，骑者从左岸走过来时斗笠不会碰到最后一个字 */}
+          <div className="absolute inset-y-0 left-[8%] z-10 flex items-center sm:left-[12%] lg:left-[16%] lg:-translate-y-[7vh]">
             <VerticalVerse lines={scene.verses} delay={0.4} />
           </div>
           <Narration className="absolute right-4 bottom-10 left-4 z-10 sm:right-auto sm:bottom-14 sm:left-8">
@@ -362,7 +413,7 @@ function useVisibleRange(ref: RefObject<HTMLDivElement | null>) {
   return range
 }
 
-/** 骑者的横坐标：画外一成处起步，走完整个露出的区间，再走出画外 */
+/** 骑者的横坐标：画外一成处起步，走完整个露出的区间，再走出画外；0.95 之后钉在终点 */
 function riderX(p: number, [v0, v1]: [number, number]) {
   const span = v1 - v0
   return v0 - 0.1 * span + clamp01(p / 0.95) * 1.2 * span
@@ -394,7 +445,8 @@ function Ground({ progress }: { progress: MotionValue<number> }) {
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.3 }}
-      className="absolute bottom-[10%] left-1/2 aspect-[1440/560] h-[34%] -translate-x-1/2 text-(--jh-ink) sm:bottom-0 sm:h-[62%]"
+      // 手机上画面比视口宽：往左挪 12.5% 让券洞正对屏幕中央（MID 在 viewBox 里偏右 180），两端桥脚都在屏内
+      className="absolute bottom-[10%] left-1/2 aspect-[1440/560] h-[29%] -translate-x-[62.5%] text-(--jh-ink) sm:bottom-0 sm:h-[62%] sm:-translate-x-1/2"
     >
       {/* 桥：像一笔从左往右扫出来 */}
       <motion.div
@@ -410,7 +462,7 @@ function Ground({ progress }: { progress: MotionValue<number> }) {
       >
         <svg viewBox={`0 0 ${W} ${H}`} className="h-full w-full overflow-visible">
           <defs>
-            {/* 桥身墨色：桥面浓，近水淡 */}
+            {/* 桥身墨色：桥面浓，往下渐渐化进水里 */}
             <linearGradient
               id="jh-bridge-wash"
               gradientUnits="userSpaceOnUse"
@@ -419,22 +471,23 @@ function Ground({ progress }: { progress: MotionValue<number> }) {
               x2="0"
               y2={BR.water}
             >
-              <stop offset="0" stopColor="currentColor" stopOpacity="0.94" />
-              <stop offset="0.55" stopColor="currentColor" stopOpacity="0.8" />
-              <stop offset="1" stopColor="currentColor" stopOpacity="0.58" />
+              <stop offset="0" stopColor="currentColor" stopOpacity="0.92" />
+              <stop offset="0.42" stopColor="currentColor" stopOpacity="0.7" />
+              <stop offset="0.78" stopColor="currentColor" stopOpacity="0.38" />
+              <stop offset="1" stopColor="currentColor" stopOpacity="0.18" />
             </linearGradient>
             {/* 岸线：靠桥处实，远处虚 */}
             {/* 岸线是一条水平直线，包围盒没有高度，渐变必须用用户坐标 */}
             <linearGradient
               id="jh-bridge-bank-l"
               gradientUnits="userSpaceOnUse"
-              x1={-W * 0.08}
+              x1={BR.x0 - BANK_L}
               y1="0"
               x2={BR.x0}
               y2="0"
             >
               <stop offset="0" stopColor="currentColor" stopOpacity="0" />
-              <stop offset="0.6" stopColor="currentColor" stopOpacity="0.28" />
+              <stop offset="0.55" stopColor="currentColor" stopOpacity="0.2" />
               <stop offset="1" stopColor="currentColor" stopOpacity="0.6" />
             </linearGradient>
             <linearGradient
@@ -442,31 +495,31 @@ function Ground({ progress }: { progress: MotionValue<number> }) {
               gradientUnits="userSpaceOnUse"
               x1={BR.x1}
               y1="0"
-              x2={W * 1.08}
+              x2={BR.x1 + BANK_R}
               y2="0"
             >
               <stop offset="0" stopColor="currentColor" stopOpacity="0.6" />
-              <stop offset="0.4" stopColor="currentColor" stopOpacity="0.28" />
+              <stop offset="0.45" stopColor="currentColor" stopOpacity="0.2" />
               <stop offset="1" stopColor="currentColor" stopOpacity="0" />
             </linearGradient>
-            {/* 倒影：一圈圈水纹把影子切碎，越深越淡 */}
+            {/* 倒影：一圈圈水纹把影子切碎，只映出券洞那一弯就淡没了 */}
             <linearGradient
               id="jh-bridge-ripple-g"
               gradientUnits="userSpaceOnUse"
               x1="0"
               y1={BR.water}
               x2="0"
-              y2={BR.water + 300}
+              y2={BR.water + 160}
             >
-              {Array.from({ length: 22 }, (_, i) => {
-                const t = i / 21
+              {Array.from({ length: 16 }, (_, i) => {
+                const t = i / 15
                 const band = i % 2 === 0 ? 1 : 0.3
                 return (
                   <stop
                     key={i}
                     offset={t}
                     stopColor="white"
-                    stopOpacity={(band * (1 - t * 0.92)).toFixed(3)}
+                    stopOpacity={(band * (1 - t * 0.95)).toFixed(3)}
                   />
                 )
               })}
@@ -477,58 +530,79 @@ function Ground({ progress }: { progress: MotionValue<number> }) {
               x="-400"
               y={BR.water}
               width={W + 800}
-              height="300"
+              height="160"
             >
               <rect
                 x="-400"
                 y={BR.water}
                 width={W + 800}
-                height="300"
+                height="160"
                 fill="url(#jh-bridge-ripple-g)"
               />
             </mask>
+            {/* 栏杆与望柱：桥上一份，水里一份 */}
+            <g
+              id="jh-bridge-rail"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d={RAIL_D} strokeWidth="2.4" />
+              {POSTS.map((p, i) => (
+                <g key={i}>
+                  <path d={`M ${p.x} ${p.y} L ${p.x} ${p.y - RAIL_H}`} strokeWidth="4" />
+                  <circle
+                    cx={p.x}
+                    cy={p.y - RAIL_H - 2}
+                    r="3.4"
+                    fill="currentColor"
+                    stroke="none"
+                  />
+                </g>
+              ))}
+            </g>
             <Rider progress={progress} range={range} />
           </defs>
 
-          {/* 岸线：桥两头各一笔，伸到画外，微微起伏（滤镜会把零高度的直线整个滤没，所以不加） */}
+          {/* 岸线：桥两头各一笔，微微起伏，两头都虚掉（滤镜会把零高度的直线整个滤没，所以不加） */}
           <g strokeWidth="1.8" strokeLinecap="round" fill="none">
             <path
-              d={`M ${-W * 0.5} ${BR.bank + 3} C ${-W * 0.1} ${BR.bank - 1}, ${BR.x0 * 0.5} ${BR.bank + 4}, ${BR.x0 - 10} ${BR.bank + 1}`}
+              d={`M ${BR.x0 - BANK_L} ${BR.bank + 3} C ${BR.x0 - BANK_L * 0.6} ${BR.bank - 1}, ${BR.x0 - BANK_L * 0.3} ${BR.bank + 3}, ${BR.x0 - 8} ${BR.bank + 1}`}
               stroke="url(#jh-bridge-bank-l)"
             />
             <path
-              d={`M ${BR.x1 + 10} ${BR.bank + 1} C ${BR.x1 + 200} ${BR.bank + 4}, ${W * 1.1} ${BR.bank - 1}, ${W * 1.5} ${BR.bank + 3}`}
+              d={`M ${BR.x1 + 8} ${BR.bank + 1} C ${BR.x1 + BANK_R * 0.3} ${BR.bank + 3}, ${BR.x1 + BANK_R * 0.6} ${BR.bank - 1}, ${BR.x1 + BANK_R} ${BR.bank + 3}`}
               stroke="url(#jh-bridge-bank-r)"
             />
           </g>
 
           {/* 水里的桥影：mask 挂在外层，里层再翻转，水纹的坐标才是正的 */}
-          <g mask="url(#jh-bridge-ripple)" opacity="0.2">
+          <g mask="url(#jh-bridge-ripple)" opacity="0.1">
             <g
               transform={`translate(0 ${BR.water * 2}) scale(1 -1)`}
               style={{ filter: 'url(#jh-ink-rough)' }}
             >
-              <path d={BODY_D} fill="currentColor" fillRule="evenodd" />
-              <path d={RAIL_D} fill="none" stroke="currentColor" strokeWidth="2.4" />
-              {POSTS.map((p, i) => (
-                <path
-                  key={i}
-                  d={`M ${p.x} ${p.y} L ${p.x} ${p.y - RAIL_H}`}
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                />
-              ))}
+              <path d={BODY_D} fill="currentColor" />
+              <use href="#jh-bridge-rail" />
             </g>
           </g>
           {/* 水里的人影 */}
-          <g mask="url(#jh-bridge-ripple)" opacity="0.15">
+          <g mask="url(#jh-bridge-ripple)" opacity="0.12">
             <use id="jh-bridge-rider-shadow" href="#jh-bridge-rider" />
           </g>
 
-          {/* 桥身 */}
-          <g style={{ filter: 'url(#jh-ink-rough)' }}>
-            <path d={BODY_D} fill="url(#jh-bridge-wash)" fillRule="evenodd" />
+          {/* 桥身：一弯月牙形的墨，桥面这一笔最浓；深色模式压淡，免得成了一块白板 */}
+          <g className="dark:opacity-60" style={{ filter: 'url(#jh-ink-rough)' }}>
+            <path d={BODY_D} fill="url(#jh-bridge-wash)" />
+            <path
+              d={DECK_D}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.6"
+              strokeLinecap="round"
+              opacity="0.8"
+            />
           </g>
           <path
             d={ARCH_RING_D}
@@ -538,36 +612,17 @@ function Ground({ progress }: { progress: MotionValue<number> }) {
             opacity="0.32"
           />
           {/* 栏杆与望柱 */}
-          <g opacity="0.82">
-            <path
-              d={RAIL_D}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinejoin="round"
-            />
-            {POSTS.map((p, i) => (
-              <g key={i}>
-                <path
-                  d={`M ${p.x} ${p.y} L ${p.x} ${p.y - RAIL_H}`}
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                />
-                <circle cx={p.x} cy={p.y - RAIL_H - 2} r="3.4" fill="currentColor" />
-              </g>
-            ))}
-          </g>
+          <use href="#jh-bridge-rail" opacity="0.82" />
 
-          {/* 桥上的骑者 */}
-          <use id="jh-bridge-rider-body" href="#jh-bridge-rider" opacity="0.95" />
-
-          {/* 桥面上的落叶 */}
+          {/* 桥面上的落叶：画在骑者前面，惊起的叶子从马身后掠过 */}
           <g className="fill-(--jh-leaf)" opacity="0.9">
             {DECK_LEAVES.map((l, i) => (
               <DeckLeaf key={i} leaf={l} progress={progress} range={range} />
             ))}
           </g>
+
+          {/* 桥上的骑者 */}
+          <use id="jh-bridge-rider-body" href="#jh-bridge-rider" opacity="0.95" />
         </svg>
       </motion.div>
 
@@ -599,7 +654,7 @@ function Ground({ progress }: { progress: MotionValue<number> }) {
 }
 
 /**
- * 骑者剪影（定义在 defs 里，桥上一份、水里一份）：斗笠、披风、背上一柄剑、马低头前行。
+ * 骑者剪影（定义在 defs 里，桥上一份、水里一份）：斗笠、往后拖的披风、背上一柄剑，马低头前行。
  * 位置与姿态由滚动进度决定，直接改 transform 属性，不经过 React 重渲染。
  */
 function Rider({ progress, range }: { progress: MotionValue<number>; range: [number, number] }) {
@@ -616,10 +671,10 @@ function Rider({ progress, range }: { progress: MotionValue<number>; range: [num
       ?.setAttribute('transform', `translate(0 ${BR.water * 2}) scale(1 -1) ${t}`)
     const a = s.swing.toFixed(2)
     const b = (-s.swing).toFixed(2)
-    fl.current?.setAttribute('transform', `rotate(${a} 30 -52)`)
-    hr.current?.setAttribute('transform', `rotate(${a} -38 -52)`)
-    fr.current?.setAttribute('transform', `rotate(${b} 30 -52)`)
-    hl.current?.setAttribute('transform', `rotate(${b} -38 -52)`)
+    fl.current?.setAttribute('transform', `rotate(${a} ${SHOULDER[0]} ${SHOULDER[1]})`)
+    hr.current?.setAttribute('transform', `rotate(${a} ${HIP[0]} ${HIP[1]})`)
+    fr.current?.setAttribute('transform', `rotate(${b} ${SHOULDER[0]} ${SHOULDER[1]})`)
+    hl.current?.setAttribute('transform', `rotate(${b} ${HIP[0]} ${HIP[1]})`)
   }
   useMotionValueEvent(pose, 'change', apply)
   useLayoutEffect(() => apply(pose.get()))
@@ -631,42 +686,44 @@ function Rider({ progress, range }: { progress: MotionValue<number>; range: [num
       strokeLinecap="round"
       strokeLinejoin="round"
     >
+      {/* 四条腿：整块由粗到细，末端一小片蹄；走路时对角的两条一起摆 */}
+      <g strokeWidth="1.2">
+        <g ref={fr}>
+          <path d={LEGS.fr} />
+        </g>
+        <g ref={hr}>
+          <path d={LEGS.hr} />
+        </g>
+        <g ref={fl}>
+          <path d={LEGS.fl} />
+        </g>
+        <g ref={hl}>
+          <path d={LEGS.hl} />
+        </g>
+      </g>
       {/* 马身：一笔剪影，从胸口起，绕过头颈、背、尾，回到腹下 */}
       <path
         stroke="none"
-        d="M 42 -46 C 46 -52 48 -58 48 -60 C 54 -74 62 -88 70 -102 C 76 -102 86 -98 94 -94 C 99 -93 102 -97 100 -101 C 98 -105 92 -106 86 -108 C 80 -112 72 -117 64 -121 L 67 -133 L 60 -122 C 48 -112 36 -92 22 -72 C 10 -68 -12 -68 -32 -70 C -44 -71 -52 -66 -54 -60 C -68 -56 -82 -44 -90 -20 C -84 -34 -74 -44 -56 -46 C -50 -44 -46 -42 -42 -40 C -20 -36 14 -36 36 -42 C 39 -43 41 -45 42 -46 Z"
+        d="M 42 -49 C 46 -54 48 -58 48 -60 C 54 -74 62 -88 70 -102 C 76 -102 86 -98 94 -94 C 99 -93 102 -97 100 -101 C 98 -105 92 -106 86 -108 C 80 -112 72 -117 64 -121 L 67 -133 L 60 -122 C 48 -112 36 -92 22 -72 C 10 -68 -12 -68 -32 -70 C -44 -71 -52 -66 -54 -60 C -68 -56 -82 -44 -90 -20 C -84 -34 -74 -44 -56 -47 C -50 -45 -46 -44 -42 -43.5 C -20 -41.5 14 -41.5 36 -46 C 39 -47 41 -48 42 -49 Z"
       />
-      {/* 四条腿：前后各一对，走路时交替摆 */}
-      <g ref={fl}>
-        <path fill="none" strokeWidth="6" d="M 30 -52 L 40 -26 L 48 -2" />
-      </g>
-      <g ref={fr}>
-        <path fill="none" strokeWidth="6" d="M 30 -52 L 24 -26 L 18 -2" />
-      </g>
-      <g ref={hl}>
-        <path fill="none" strokeWidth="6" d="M -38 -52 L -50 -26 L -44 -2" />
-      </g>
-      <g ref={hr}>
-        <path fill="none" strokeWidth="6" d="M -38 -52 L -58 -26 L -62 -2" />
-      </g>
-      {/* 背上的剑 */}
-      <path fill="none" strokeWidth="3" d="M -1 -73 L -20 -115" />
-      <path fill="none" strokeWidth="2" d="M -21 -107 L -13 -111" />
-      {/* 骑者：腿、身躯与向后飘的披风、头、斗笠 */}
-      <path fill="none" strokeWidth="5.5" d="M 8 -68 L 22 -52 L 21 -34" />
+      {/* 背上的剑：下半截藏在披风里，剑柄斜斜露在肩后 */}
+      <path fill="none" strokeWidth="3" d="M -4 -80 L -24 -117" />
+      <path fill="none" strokeWidth="2" d="M -26 -108 L -18 -113" />
+      {/* 骑者：腿搭在马腹前，身子微微前倾，披风从肩头往后拖成一道渐细的弧 */}
+      <path fill="none" strokeWidth="5" d="M 10 -72 L 24 -55 L 22 -36" />
       <path
         stroke="none"
-        d="M 14 -70 C 17 -80 17 -92 16 -100 C 15 -105 10 -108 4 -107 C -6 -106 -16 -96 -28 -82 C -33 -75 -33 -66 -28 -60 C -22 -64 -12 -69 -4 -70 Z"
+        d="M 12 -72 C 16 -84 18 -94 16 -102 C 14 -108 6 -111 0 -105 C -16 -100 -36 -90 -56 -78 C -38 -80 -20 -76 -8 -72 Z"
       />
       <circle cx="9" cy="-113" r="5.5" stroke="none" />
-      <path stroke="none" d="M -8 -121 Q 9 -136 26 -121 Q 9 -117 -8 -121 Z" />
+      <path stroke="none" d="M -10 -120 Q 9 -136 27 -120 Q 9 -116 -10 -120 Z" />
       {/* 缰绳 */}
-      <path fill="none" strokeWidth="1.3" opacity="0.85" d="M 16 -92 Q 58 -86 92 -100" />
+      <path fill="none" strokeWidth="1.3" opacity="0.85" d="M 18 -92 Q 58 -85 93 -97" />
       {/* 剑穗：整幅画里唯一的一点朱砂 */}
       <path
         className="fill-(--jh-seal)"
         stroke="none"
-        d="M -20 -115 C -23 -111 -24 -105 -21 -102 C -18 -105 -17 -111 -20 -115 Z"
+        d="M -24 -117 C -27 -113 -28 -107 -25 -104 C -22 -107 -21 -113 -24 -117 Z"
       />
     </g>
   )
@@ -686,7 +743,8 @@ function DeckLeaf({
   const y = deckY(leaf.x)
   const transform = useTransform(progress, (p) => {
     const hoof = riderX(p, range) + HOOF * 0.85
-    const s = clamp01((hoof - leaf.x + 8) / 110)
+    // 前蹄快踩到时一下子弹起来，翻个身落在前面一点：来得快，去得也快
+    const s = clamp01((hoof - leaf.x + 16) / 64)
     const x = leaf.x + 30 * s
     const lift = -26 * Math.sin(Math.PI * s)
     return `translate(${x.toFixed(1)} ${(y + lift - 2).toFixed(1)}) rotate(${(leaf.rot + 200 * s).toFixed(1)}) scale(1.15)`
