@@ -16,7 +16,8 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "build:engine": "vite build --config macos/engine/vite.config.mjs"
   },
   "dependencies": {
     "@codemirror/lang-css": "^6.3.1",

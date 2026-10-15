@@ -37,3 +37,12 @@
 ## 依赖
 
 依赖已在 package.json 中装好（prettier + 插件、sql-formatter、js-yaml、fast-xml-parser、papaparse、cronstrue、cron-parser、hash-wasm、crypto-js、jose、diff、marked、dompurify、qrcode、jsqr、cmdk、lenis…）。新增依赖前先确认现有库不能满足。
+
+## Mac 原生 App（macos/）
+
+- SwiftPM 包：`ShowMeCore`（纯逻辑，只依赖 Foundation，Linux 可编译测试）+ `ShowMe`（SwiftUI + AppKit App，只在 macOS 上参与构建）。说明见 `macos/README.md`。
+- 云端没有 Xcode：`macos/scripts/test-linux.sh` 用 Docker（`swift:6.2`，需要先 `sudo dockerd &`）编译并测试 ShowMeCore；SwiftUI 部分靠 GitHub Actions `macOS App` 工作流（macos-15 runner）编译，产物 `showMe-macOS` 构件。
+- 工具 = `ShowMeCore/Tools/**` 里的 `ToolSpec`（字段 + 纯函数 run），抽屉界面自动生成；需要整页界面的（API 调试、二维码、图片）在 `ShowMe/Tools/`。
+- 所有文案双语：`LocalizedText("中文", "English")`、运行时 `input.t(...)`、界面 `tr(...)`。
+- 通过 Bash heredoc 写文件时，字面量 `\u` 加 4 位十六进制会被转成字符：Swift 源码里用 `\u{…}`，需要字面反斜杠 u 时拼接或写完 grep 核对。
+- JS 引擎（prettier、sql-formatter、js-yaml、marked、cronstrue）源码在 `macos/engine/`，`npm run build:engine` 产出 `macos/Resources/engine/showme-engine.js`（提交进仓库）。

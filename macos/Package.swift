@@ -22,6 +22,7 @@ targets.append(
             .linkedFramework("JavaScriptCore"),
             .linkedFramework("CoreImage"),
             .linkedFramework("UniformTypeIdentifiers"),
+            .linkedFramework("WebKit"),
         ]
     )
 )

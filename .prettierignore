@@ -2,3 +2,7 @@ dist
 node_modules
 package-lock.json
 .verify
+macos/Resources
+macos/.build
+macos/build
+dist-static
