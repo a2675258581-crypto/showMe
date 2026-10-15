@@ -31,10 +31,11 @@ final class EncodeCryptoToolTests: XCTestCase {
 
     // MARK: 哈希
 
-    let hash = HashTool.spec
+    // 不能叫 hash：macOS 上 XCTestCase 继承 NSObject，会和 NSObject.hash 冲突
+    let hashTool = HashTool.spec
 
     func testHashAllAlgorithmsAndMD5Formats() throws {
-        let r = try hash("abc")
+        let r = try hashTool("abc")
         let byID = Dictionary(uniqueKeysWithValues: r.outputs.map { ($0.id, $0.value) })
         XCTAssertEqual(byID["md5"], "900150983cd24fb0d6963f7d28e17f72")
         XCTAssertEqual(byID["md5-16"], "3cd24fb0d6963f7d")
@@ -46,36 +47,36 @@ final class EncodeCryptoToolTests: XCTestCase {
             "900150983cd24fb0d6963f7d28e17f72", "900150983CD24FB0D6963F7D28E17F72", "3cd24fb0d6963f7d", "3CD24FB0D6963F7D",
         ])
         XCTAssertEqual(r.outputs.first { $0.id == "md5-32-lower" }?.label, "MD5 32 位小写")
-        XCTAssertEqual(try hash("abc", lang: .en).outputs.first { $0.id == "md5-16-upper" }?.label, "MD5 16 uppercase")
+        XCTAssertEqual(try hashTool("abc", lang: .en).outputs.first { $0.id == "md5-16-upper" }?.label, "MD5 16 uppercase")
     }
 
     func testHashOptions() throws {
         // 单个算法 + 大写；MD5 常用格式不受影响
-        let up = try hash("abc", options: ["algorithm": "md5", "upper": "1"])
+        let up = try hashTool("abc", options: ["algorithm": "md5", "upper": "1"])
         XCTAssertEqual(up.primary?.value, "900150983CD24FB0D6963F7D28E17F72")
         XCTAssertEqual(up.outputs.first { $0.id == "md5-32-lower" }?.value, "900150983cd24fb0d6963f7d28e17f72")
         XCTAssertEqual(up.outputs.count, 5)
-        let b64 = try hash("abc", options: ["algorithm": "md5", "format": "base64"])
+        let b64 = try hashTool("abc", options: ["algorithm": "md5", "format": "base64"])
         XCTAssertEqual(b64.primary?.value, "kAFQmDzST7DWlj99KOF/cg==")
         XCTAssertEqual(b64.outputs.first { $0.id == "md5-16-upper" }?.value, "3CD24FB0D6963F7D")
-        XCTAssertEqual(try hash("abc", options: ["algorithm": "common"]).outputs.filter { !$0.id.hasPrefix("md5-") }.map(\.id), ["md5", "sha1", "sha256", "sha512"])
-        XCTAssertEqual(try hash("abc", options: ["algorithm": "sha"]).outputs.count, 7 + 4)
+        XCTAssertEqual(try hashTool("abc", options: ["algorithm": "common"]).outputs.filter { !$0.id.hasPrefix("md5-") }.map(\.id), ["md5", "sha1", "sha256", "sha512"])
+        XCTAssertEqual(try hashTool("abc", options: ["algorithm": "sha"]).outputs.count, 7 + 4)
         // 输入编码
-        XCTAssertEqual(try hash("616263", options: ["algorithm": "md5", "encoding": "hex"]).primary?.value, "900150983cd24fb0d6963f7d28e17f72")
-        XCTAssertEqual(try hash("YWJj", options: ["algorithm": "md5", "encoding": "base64"]).primary?.value, "900150983cd24fb0d6963f7d28e17f72")
-        XCTAssertEqual(try hash("中文", options: ["algorithm": "md5"]).primary?.value, "a7bac2239fcdcb3a067903d8077c4a07")
-        XCTAssertEqual(try hash("A中", options: ["algorithm": "sha1", "encoding": "utf16le"]).primary?.value, Hash.hex(.sha1, [0x41, 0x00, 0x2D, 0x4E]))
-        XCTAssertEqual(try hash("é", options: ["algorithm": "md5", "encoding": "latin1"]).primary?.value, Hash.hex(.md5, [0xE9]))
-        XCTAssertThrowsError(try hash("ab中", options: ["encoding": "latin1"])) { e in
+        XCTAssertEqual(try hashTool("616263", options: ["algorithm": "md5", "encoding": "hex"]).primary?.value, "900150983cd24fb0d6963f7d28e17f72")
+        XCTAssertEqual(try hashTool("YWJj", options: ["algorithm": "md5", "encoding": "base64"]).primary?.value, "900150983cd24fb0d6963f7d28e17f72")
+        XCTAssertEqual(try hashTool("中文", options: ["algorithm": "md5"]).primary?.value, "a7bac2239fcdcb3a067903d8077c4a07")
+        XCTAssertEqual(try hashTool("A中", options: ["algorithm": "sha1", "encoding": "utf16le"]).primary?.value, Hash.hex(.sha1, [0x41, 0x00, 0x2D, 0x4E]))
+        XCTAssertEqual(try hashTool("é", options: ["algorithm": "md5", "encoding": "latin1"]).primary?.value, Hash.hex(.md5, [0xE9]))
+        XCTAssertThrowsError(try hashTool("ab中", options: ["encoding": "latin1"])) { e in
             XCTAssertTrue((e as? ToolError)?.message.contains("第 3 个字符「中」超出 Latin-1 范围") ?? false)
         }
-        XCTAssertThrowsError(try hash("0g", options: ["encoding": "hex"], lang: .en)) { e in
+        XCTAssertThrowsError(try hashTool("0g", options: ["encoding": "hex"], lang: .en)) { e in
             XCTAssertTrue((e as? ToolError)?.message.hasPrefix("Input: Hex character 2") ?? false)
         }
     }
 
     func testHashVerify() throws {
-        func notes(_ expected: String) throws -> [ToolNote] { try hash("abc", options: ["expected": expected]).notes }
+        func notes(_ expected: String) throws -> [ToolNote] { try hashTool("abc", options: ["expected": expected]).notes }
         XCTAssertTrue(try notes(" 900150983CD24FB0 D6963F7D28E17F72 \n").contains { $0.message == "✓ 校验通过：与 MD5 一致" })
         XCTAssertTrue(try notes("3cd24fb0d6963f7d").contains { $0.message.contains("MD5 16 位") })
         XCTAssertTrue(try notes("kAFQmDzST7DWlj99KOF/cg==").contains { $0.message.contains("与 MD5 一致") })

@@ -26,6 +26,7 @@ targets.append(
         ]
     )
 )
+targets.append(.testTarget(name: "ShowMeTests", dependencies: ["ShowMe", "ShowMeCore"], path: "Tests/ShowMeTests"))
 products.append(.executable(name: "ShowMe", targets: ["ShowMe"]))
 #endif
 
