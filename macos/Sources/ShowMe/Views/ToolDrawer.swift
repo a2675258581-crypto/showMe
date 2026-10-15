@@ -236,9 +236,9 @@ struct ToolPanel: View {
         emptyInput = false
         let input = ToolInput(text: text, options: options, lang: AppSettings.shared.lang, now: Date())
         let spec = self.spec
-        let outcome = await Task.detached(priority: .userInitiated) {
+        let outcome = await BigStack.run {
             Result(catching: { try spec.run(input) })
-        }.value
+        }
         guard !Task.isCancelled else { return }
         switch outcome {
         case .success(let value):

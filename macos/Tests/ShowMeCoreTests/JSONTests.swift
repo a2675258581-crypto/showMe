@@ -108,3 +108,15 @@ final class JSONTests: XCTestCase {
         }
     }
 }
+
+final class BigStackTests: XCTestCase {
+    func testDeepJSONOnBigStack() async throws {
+        let depth = 1000
+        let text = String(repeating: "[", count: depth) + "1" + String(repeating: "]", count: depth)
+        let printed = await BigStack.run { () -> String? in
+            guard let value = try? JSON.value(text) else { return nil }
+            return JSON.print(value, .minified)
+        }
+        XCTAssertEqual(printed, text)
+    }
+}

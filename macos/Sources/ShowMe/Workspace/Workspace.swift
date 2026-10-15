@@ -465,9 +465,9 @@ final class Workspace {
         let indent = AppSettings.shared.indentWidth
         let lang = self.lang
         Task {
-            let result = await Task.detached(priority: .userInitiated) {
+            let result = await BigStack.run {
                 Result(catching: { try DocumentFormatter.format(text, languageID: languageID, fileName: fileName, indentWidth: indent, lang: lang) })
-            }.value
+            }
             guard tab.revision == revision else { return } // 格式化期间又改动了：放弃这次结果
             switch result {
             case .success(let formatted):
