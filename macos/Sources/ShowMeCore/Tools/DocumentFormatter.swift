@@ -3,9 +3,9 @@ import Foundation
 /// 编辑器的「格式化文档」（⌥⇧F）：按文档语言选择格式化方式。
 /// JSON / XML 用原生实现；JS、CSS、HTML、Markdown、YAML、GraphQL 走 prettier，SQL 走 sql-formatter（脚本引擎）。
 public enum DocumentFormatter {
-    public static func format(_ text: String, languageID: String, indentWidth: Int, lang: Lang) throws -> String {
+    public static func format(_ text: String, languageID: String, fileName: String? = nil, indentWidth: Int, lang: Lang) throws -> String {
         let language = EditorLanguage.byID(languageID)
-        guard let kind = language.formatter else {
+        guard let kind = language.formatter(forFileName: fileName) else {
             throw ToolError(lang.t(
                 "\(language.displayName(.zh)) 暂不支持格式化",
                 "Formatting isn't available for \(language.displayName(.en))"

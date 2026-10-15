@@ -36,7 +36,7 @@ public enum JSONFormatterTool {
         run: run
     )
 
-    public static func run(_ input: ToolInput) throws -> ToolResult {
+    @Sendable public static func run(_ input: ToolInput) throws -> ToolResult {
         let lang = input.lang
         switch input.string("mode") {
         case "escape":

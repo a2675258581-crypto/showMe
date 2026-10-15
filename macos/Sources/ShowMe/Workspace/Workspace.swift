@@ -453,7 +453,7 @@ final class Workspace {
     func formatActive() {
         guard let tab = activeDocument else { return }
         let info = tab.languageInfo
-        guard info.formatter != nil else {
+        guard info.formatter(forFileName: tab.url?.lastPathComponent) != nil else {
             showFlash(tr("\(info.displayName(.zh)) 暂不支持格式化", "Formatting isn't available for \(info.displayName(.en))"), isError: true)
             return
         }
@@ -461,11 +461,12 @@ final class Workspace {
         let text = tab.text
         let revision = tab.revision
         let languageID = tab.language
+        let fileName = tab.url?.lastPathComponent
         let indent = AppSettings.shared.indentWidth
         let lang = self.lang
         Task {
             let result = await Task.detached(priority: .userInitiated) {
-                Result(catching: { try DocumentFormatter.format(text, languageID: languageID, indentWidth: indent, lang: lang) })
+                Result(catching: { try DocumentFormatter.format(text, languageID: languageID, fileName: fileName, indentWidth: indent, lang: lang) })
             }.value
             guard tab.revision == revision else { return } // 格式化期间又改动了：放弃这次结果
             switch result {
