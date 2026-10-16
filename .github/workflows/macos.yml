@@ -1,0 +1,35 @@
+name: macOS App
+
+on:
+  push:
+    branches: [main, 'claude/**']
+    paths: ['macos/**', '.github/workflows/macos.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: macos-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
+          xcodebuild -version
+          swift --version
+      - name: Core tests
+        working-directory: macos
+        run: swift test
+      - name: Build app (universal)
+        working-directory: macos
+        run: ./scripts/build-app.sh --universal
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: showMe-macOS
+          path: macos/build/showMe.zip
+          retention-days: 14
