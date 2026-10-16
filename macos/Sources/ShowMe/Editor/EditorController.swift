@@ -37,6 +37,11 @@ final class EditorController: NSObject, NSTextViewDelegate {
     private let header: NSHostingView<DocHeader>
     private var highlightTask: Task<Void, Never>?
     private(set) var baseAttributes: [NSAttributedString.Key: Any] = [:]
+    /// 最近一次语法高亮的结果（重画背景色时要用：行内代码的底色）
+    private var lastTokens: [HighlightToken] = []
+    /// 查找栏的匹配与当前项
+    private var searchRanges: [NSRange] = []
+    private var currentSearchRange: NSRange?
     private var baseFont = NSFont.systemFont(ofSize: 14)
 
     init(tab: DocumentTab) {
@@ -62,8 +67,9 @@ final class EditorController: NSObject, NSTextViewDelegate {
         tv.isRichText = false
         tv.importsGraphics = false
         tv.allowsUndo = true
-        tv.usesFindBar = true
-        tv.isIncrementalSearchingEnabled = true
+        // 查找替换用自己的纸面查找栏（FindBar），不用系统的 NSTextFinder
+        tv.usesFindBar = false
+        tv.isIncrementalSearchingEnabled = false
         tv.isAutomaticQuoteSubstitutionEnabled = false
         tv.isAutomaticDashSubstitutionEnabled = false
         tv.isAutomaticTextReplacementEnabled = false
@@ -316,10 +322,43 @@ final class EditorController: NSObject, NSTextViewDelegate {
         for token in tokens {
             let range = NSRange(location: token.location, length: token.length)
             guard token.length > 0, NSMaxRange(range) <= length else { continue }
-            let attributes = colorAttributes(for: token.kind)
+            var attributes = colorAttributes(for: token.kind)
+            attributes.removeValue(forKey: .backgroundColor) // 底色统一在 refreshBackgrounds 里画
             if !attributes.isEmpty {
                 layout.addTemporaryAttributes(attributes, forCharacterRange: range)
             }
+        }
+        lastTokens = tokens
+        refreshBackgrounds()
+    }
+
+    // MARK: - 查找高亮
+
+    /// 查找栏更新匹配时调用；ranges 为空表示清除
+    func setSearchHighlights(_ ranges: [NSRange], current: NSRange?) {
+        searchRanges = ranges
+        currentSearchRange = current
+        refreshBackgrounds()
+    }
+
+    /// 背景色：行内代码底色 + 所有匹配（淡黄）+ 当前匹配（强调色）
+    private func refreshBackgrounds() {
+        guard let storage = textView.textStorage, let layout = textView.layoutManager else { return }
+        let length = storage.length
+        layout.removeTemporaryAttribute(.backgroundColor, forCharacterRange: NSRange(location: 0, length: length))
+        for token in lastTokens where token.kind == .code {
+            let range = NSRange(location: token.location, length: token.length)
+            if token.length > 0, NSMaxRange(range) <= length {
+                layout.addTemporaryAttribute(.backgroundColor, value: Ink.well, forCharacterRange: range)
+            }
+        }
+        for range in searchRanges where range.length > 0 && NSMaxRange(range) <= length {
+            layout.addTemporaryAttribute(.backgroundColor, value: Ink.findMatch, forCharacterRange: range)
+        }
+        if let current = currentSearchRange, current.length > 0, NSMaxRange(current) <= length {
+            let accent = AppSettings.shared.accent
+            let color = NSColor.paper(accent.light.withAlphaComponent(0.3), accent.dark.withAlphaComponent(0.42))
+            layout.addTemporaryAttribute(.backgroundColor, value: color, forCharacterRange: current)
         }
     }
 

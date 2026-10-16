@@ -38,6 +38,23 @@ struct AppCommands: Commands {
                 .keyboardShortcut("w", modifiers: [.command, .shift])
         }
 
+        // 用自己的查找栏替换系统的「查找」子菜单
+        CommandGroup(replacing: .textEditing) {
+            Menu(tr("查找", "Find")) {
+                Button(tr("查找…", "Find…")) { FindModel.shared.open(replace: false) }
+                    .keyboardShortcut("f")
+                Button(tr("查找和替换…", "Find and Replace…")) { FindModel.shared.open(replace: true) }
+                    .keyboardShortcut("f", modifiers: [.command, .option])
+                Divider()
+                Button(tr("查找下一个", "Find Next")) { FindModel.shared.next() }
+                    .keyboardShortcut("g")
+                Button(tr("查找上一个", "Find Previous")) { FindModel.shared.previous() }
+                    .keyboardShortcut("g", modifiers: [.command, .shift])
+                Button(tr("用所选内容查找", "Use Selection for Find")) { FindModel.shared.useSelection() }
+                    .keyboardShortcut("e")
+            }
+        }
+
         CommandGroup(after: .textEditing) {
             Divider()
             Button(tr("格式化文档", "Format Document")) { workspace.formatActive() }
@@ -136,7 +153,8 @@ enum HelpText {
 
     ## 编辑
     - ⌥⇧F 格式化整篇文档（JSON、XML、JS/TS、CSS、HTML、Markdown、YAML、SQL、GraphQL…）
-    - ⌘/ 注释，Tab / ⇧Tab 整块缩进，⌘F 查找替换
+    - ⌘F 查找替换（支持区分大小写、全词、正则；⌘G / ⇧⌘G 下一个 / 上一个，⌘↩ 全部替换）
+    - ⌘/ 注释，Tab / ⇧Tab 整块缩进
     - 点标题下面那一行可以切换语言、编码和换行符
 
     ## 工具
@@ -158,7 +176,8 @@ enum HelpText {
 
     ## Editing
     - ⌥⇧F formats the whole document (JSON, XML, JS/TS, CSS, HTML, Markdown, YAML, SQL, GraphQL…)
-    - ⌘/ toggles comments, Tab / ⇧Tab indents blocks, ⌘F find and replace
+    - ⌘F find and replace (match case, whole word, regex; ⌘G / ⇧⌘G next / previous, ⌘↩ replace all)
+    - ⌘/ toggles comments, Tab / ⇧Tab indents blocks
     - Click the line under the title to change the language mode, encoding or line endings
 
     ## Tools

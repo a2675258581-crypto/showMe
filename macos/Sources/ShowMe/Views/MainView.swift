@@ -39,6 +39,15 @@ struct MainView: View {
         if let tab = workspace.activeTab {
             if tab.isDocument {
                 EditorView(tab: tab)
+                    .overlay(alignment: .topTrailing) {
+                        if FindModel.shared.isVisible {
+                            FindBar()
+                                .padding(.top, 10)
+                                .padding(.trailing, 18)
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                        }
+                    }
+                    .animation(.easeOut(duration: 0.16), value: FindModel.shared.isVisible)
             } else if let toolID = tab.toolID {
                 ToolPage(toolID: toolID)
                     .id(tab.id)

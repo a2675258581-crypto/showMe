@@ -60,6 +60,17 @@ final class PaperTextView: NSTextView {
         MainActor.assumeIsolated { controller?.tab.languageInfo }
     }
 
+    // MARK: - Esc：查找栏开着时先关掉查找栏
+
+    override func cancelOperation(_ sender: Any?) {
+        let handled = MainActor.assumeIsolated { () -> Bool in
+            guard FindModel.shared.isVisible else { return false }
+            FindModel.shared.close()
+            return true
+        }
+        if !handled { super.cancelOperation(sender) }
+    }
+
     // MARK: - 换行自动缩进
 
     override func insertNewline(_ sender: Any?) {

@@ -71,6 +71,8 @@ enum Ink {
     static let text3 = NSColor.paper(0x7A7266, 0x9B9183)
     static let hover = NSColor.paper(NSColor(hex: 0x211D18, alpha: 0.06), NSColor(hex: 0xF1EBE1, alpha: 0.07))
     static let warning = NSColor.paper(0xA33A1F, 0xEC8B6E)
+    /// 查找匹配的荧光笔底色
+    static let findMatch = NSColor.paper(NSColor(hex: 0xF2CF6B, alpha: 0.5), NSColor(hex: 0x9C7A22, alpha: 0.5))
 
     @MainActor
     static var accent: NSColor {
